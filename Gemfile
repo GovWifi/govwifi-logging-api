@@ -3,7 +3,6 @@ ruby File.read(".ruby-version").chomp
 
 gem "aws-sdk-s3"
 gem "faraday"
-gem "mysql2"
 gem "opensearch-ruby"
 gem "puma"
 gem "rake"
@@ -18,6 +17,7 @@ gem "sinatra-contrib"
 group :test do
   gem "factory_bot"
   gem "faker"
+  gem "mysql2", "~> 0.5.6"
   gem "rack-test"
   gem "rspec"
   gem "rubocop-govuk"
