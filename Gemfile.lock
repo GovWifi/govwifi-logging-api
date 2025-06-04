@@ -36,7 +36,7 @@ GEM
       rexml
     diff-lcs (1.6.1)
     docile (1.4.1)
-    factory_bot (6.5.1)
+    factory_bot (6.5.3)
       activesupport (>= 6.1.0)
     faker (3.5.1)
       i18n (>= 1.8.11, < 2)
@@ -178,7 +178,7 @@ GEM
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
-    zeitwerk (2.7.2)
+    zeitwerk (2.7.3)
 
 PLATFORMS
   arm64-darwin-22
