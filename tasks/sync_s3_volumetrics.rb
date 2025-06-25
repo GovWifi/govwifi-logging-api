@@ -20,4 +20,9 @@ task sync_s3_volumetrics: :load_env do
     elasticsearch_gateway: Performance::Gateway::Elasticsearch.new(Performance::Metrics::ELASTICSEARCH_INDEX),
     s3_gateway: Performance::Gateway::S3.new("completion_rate", bucket),
   ).execute
+
+  Performance::UseCase::SyncS3ToElasticsearch.new(
+    elasticsearch_gateway: Performance::Gateway::Elasticsearch.new(Performance::Metrics::ELASTICSEARCH_INDEX),
+    s3_gateway: Performance::Gateway::S3.new("user_devices", bucket),
+  ).execute
 end

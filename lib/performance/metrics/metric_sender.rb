@@ -13,6 +13,7 @@ module Performance::Metrics
       inactive_users: Performance::UseCase::NewUsers,
       roaming_users: Performance::UseCase::RoamingUsers,
       volumetrics: Performance::UseCase::Volumetrics,
+      user_devices: Performance::UseCase::UserDevices,
     }.freeze
 
     def initialize(metric:, period: :daily, date: Date.today)

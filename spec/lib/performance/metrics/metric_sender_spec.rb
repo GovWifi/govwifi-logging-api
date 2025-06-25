@@ -23,6 +23,17 @@ describe Performance::Metrics::MetricSender do
     Performance::Metrics::MetricSender.new(period: "week", date: today, metric: :volumetrics)
   end
 
+  subject(:user_devices) do
+    Performance::Metrics::MetricSender.new(period: "week", date: today, metric: :user_devices)
+  end
+
+  let(:user_devices_expected_hash) do
+    { "metric_name" => "user-devices",
+      "period" => "week",
+      "devices" => nil,
+      "date" => today.to_s }
+  end
+
   let(:active_users_expected_hash) do
     { "metric_name" => "active-users",
       "period" => "week",
@@ -120,6 +131,11 @@ describe Performance::Metrics::MetricSender do
       expect(s3_contents("roaming_users/roaming_users-week-#{today}"))
         .to eq({ "active" => 0, "cba" => 0, "metric_name" => "roaming-users", "period" => "week", "roaming" => 0, "date" => today.to_s })
     end
+    it "sends user devices data to S3" do
+      user_devices.to_s3
+      expect(s3_contents("user_devices/user_devices-week-#{today}"))
+        .to eq(user_devices_expected_hash)
+    end
     it "sends volumetrics data to S3" do
       volumetrics.to_s3
       expect(s3_contents("volumetrics/volumetrics-week-#{today}"))
@@ -145,6 +161,11 @@ describe Performance::Metrics::MetricSender do
       roaming_users.to_elasticsearch
       expect(elasticsearch_client).to have_received(:index)
         .with({ index: Performance::Metrics::ELASTICSEARCH_INDEX, id: "roaming_users-week-#{today}", body: roaming_users_expected_hash.symbolize_keys })
+    end
+    it "indexes user devices into Elasticsearch" do
+      user_devices.to_elasticsearch
+      expect(elasticsearch_client).to have_received(:index)
+        .with({ index: Performance::Metrics::ELASTICSEARCH_INDEX, id: "user_devices-week-#{today}", body: user_devices_expected_hash.symbolize_keys })
     end
     it "indexes volumetrics data into Elasticsearch" do
       volumetrics.to_elasticsearch
