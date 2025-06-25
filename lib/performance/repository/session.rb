@@ -55,5 +55,17 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
 
       DB.fetch(sql).first
     end
+
+    def average_unique_devices_per_user(period:, date:)
+      sql = "SELECT AVG(mac_count) AS average_devices_per_user
+            FROM (
+              SELECT username, COUNT(DISTINCT mac) AS mac_count
+              FROM sessions
+              WHERE username IS NOT NULL
+                AND start > DATE_SUB('#{date.strftime('%Y-%m-%d %H:%M:%S')}', INTERVAL 1 #{period})
+              GROUP BY username
+            ) AS user_devices"
+      DB.fetch(sql).first
+    end
   end
 end
