@@ -110,4 +110,4 @@ Merging to `master` will automatically deploy this API to Dev and Staging via th
 This codebase is released under [the MIT License][mit].
 
 [mit]: LICENCE
-[build-repo]: https://github.com/alphagov/govwifi-build
+[build-repo]: https://github.com/GovWifi/govwifi-build
