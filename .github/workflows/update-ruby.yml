@@ -5,8 +5,12 @@ on:
   schedule:
     - cron: "0 0 15 * 0" # Runs Monthly
 
+
 jobs:
   upgrade-ruby:
+    permissions:
+      contents: write # <- Needed to create PR's
+
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
