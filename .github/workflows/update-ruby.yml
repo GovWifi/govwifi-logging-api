@@ -1,0 +1,17 @@
+name: Update Ruby
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 15 * 0" # Runs Monthly
+
+jobs:
+  upgrade-ruby:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Run Updater
+        uses: GovWifi/shared-actions-workflows/.github/actions/ruby-updater@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
