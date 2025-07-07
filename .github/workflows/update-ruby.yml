@@ -9,7 +9,8 @@ on:
 jobs:
   upgrade-ruby:
     permissions:
-      contents: write # <- Needed to create PR's
+      contents: write # <- Needed to create branches
+      pull-requests: write # <- Needed to create PR's
 
     runs-on: ubuntu-latest
     steps:
