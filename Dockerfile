@@ -1,4 +1,4 @@
-FROM ruby:3.4.3-alpine
+FROM ruby:3.4.4-alpine
 ARG BUNDLE_INSTALL_CMD
 
 ENV S3_PUBLISHED_LOCATIONS_IPS_BUCKET 'stub-bucket'
