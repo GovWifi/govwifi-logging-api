@@ -3,7 +3,11 @@ name: Update Ruby
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 15 * 0" # Runs Monthly
+    - cron: "0 0 15 * *" # Runs Monthly
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   check-ruby-setup:
@@ -58,4 +62,14 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         main-branch: master
-
+  labeler:
+    ## Auto add labels to the PR
+    runs-on: ubuntu-latest
+    needs: [check-ruby-setup, upgrade-ruby]
+    steps:
+      - name: add labels
+        env:
+          NEW_RUBY: ${{ needs.check-ruby-setup.outputs.NEW_RUBY}}
+          ## Only update if the Ruby Version has changed.
+        if: ${{ env.NEW_RUBY }} == 'true'
+        uses: actions/labeler@v5
