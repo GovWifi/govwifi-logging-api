@@ -9,7 +9,18 @@ class Performance::Gateway::S3
   def each(&block)
     keys.each do |key|
       json = Services.s3_client.get_object(bucket: @bucket, key:)
-      block.call(key[@prefix.length..], JSON.parse(json.body.read))
+      body = json.body.read
+
+      # Skip if the object body is empty or nil
+      next if body.to_s.strip.empty?
+
+      begin
+        parsed = JSON.parse(body)
+        block.call(key[@prefix.length..], parsed)
+      rescue JSON::ParserError => e
+        warn "Skipping invalid JSON object in #{@bucket}/#{key}: #{e.message}"
+        next
+      end
     end
   end
 
