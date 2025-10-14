@@ -58,7 +58,8 @@ GEM
     multi_json (1.15.0)
     mustermann (3.0.3)
       ruby2_keywords (~> 0.0.1)
-    mysql2 (0.5.6)
+    mysql2 (0.5.7)
+      bigdecimal
     net-http (0.6.0)
       uri
     nio4r (2.7.4)
@@ -191,7 +192,7 @@ DEPENDENCIES
   factory_bot
   faker
   faraday
-  mysql2 (~> 0.5.6)
+  mysql2 (~> 0.5.7)
   opensearch-ruby
   puma
   rack-test
