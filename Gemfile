@@ -17,7 +17,7 @@ gem "sinatra-contrib"
 group :test do
   gem "factory_bot"
   gem "faker"
-  gem "mysql2", "~> 0.5.6"
+  gem "mysql2", "~> 0.5.7"
   gem "rack-test"
   gem "rspec"
   gem "rubocop-govuk"
