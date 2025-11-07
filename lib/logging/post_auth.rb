@@ -3,7 +3,9 @@ module Logging
     def execute(params:)
       @params = params
 
-      return handle_username_request unless @params["cert_name"].present?
+      # The EAP Type determines whether this is a certificate-based or a
+      # username/password MSCHAP connection session.
+      return handle_username_request unless connection_type(eap_type) == "EAP-TLS"
 
       create_cert_session
     end
@@ -36,6 +38,7 @@ module Logging
           cert_serial: @params.fetch("cert_serial"),
           cert_issuer: @params.fetch("cert_issuer"),
           cert_subject: @params.fetch("cert_subject"),
+          eap_type: eap_type,
         ),
       )
     end
@@ -50,6 +53,7 @@ module Logging
         success: access_accept?,
         task_id: @params.fetch("task_id"),
         authentication_reply: @params.fetch("authentication_reply"),
+        eap_type: eap_type,
       }
     end
 
@@ -82,6 +86,27 @@ module Logging
       return mac if valid_mac?(mac)
 
       ""
+    end
+
+    def connection_type(eap_type)
+      # Map EAP types received into what will be logged for that field
+      case eap_type
+        when "EAP-TLS"
+          "EAP-TLS"
+        when "NAK"
+          "EAP-TLS"
+        when "PEAP"
+          "MSCHAP"
+        else
+          # Defaulting to "MSCHAP"
+          "MSCHAP"
+      end
+    end
+
+    def eap_type
+      result = (@params[:eap_type] || "").upcase
+      puts("\n\nEAP Type: '#{result}'\n\n")
+      result
     end
 
     def handle_username_request
