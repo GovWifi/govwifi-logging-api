@@ -13,7 +13,7 @@ module Logging
   private
 
     VALID_MAC_LENGTH = 17
-    VALID_USERNAME_LENGTH = 6
+    VALID_USERNAME_LENGTH = 254
 
     def create_user_session
       if valid_username?(username)
@@ -104,9 +104,7 @@ module Logging
     end
 
     def eap_type
-      result = (@params[:eap_type] || "").upcase
-      puts("\n\nEAP Type: '#{result}'\n\n")
-      result
+      (@params["eap_type"] || "").upcase
     end
 
     def handle_username_request

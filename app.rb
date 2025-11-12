@@ -38,6 +38,12 @@ class App < Sinatra::Base
     set :log_level, Logger::INFO
   end
 
+  get "/" do
+    # k8s health check usually need the root to respond with 200 ok. Its also
+    # useful to have something basic on the site root instead of a 404.
+    {"status": "ok"}.to_json
+  end
+
   get "/healthcheck" do
     "Healthy"
   end
