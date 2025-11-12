@@ -5,4 +5,4 @@ coverage
 # ignore host development files
 .gems
 .envrc
-
+.bundle
