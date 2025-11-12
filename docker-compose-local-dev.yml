@@ -1,0 +1,11 @@
+# Use to run the dependancies needed by a locally installed logging API. The
+# API will be run by the developer outside of docker compose.
+services:
+  user_and_session_db:
+    image: mysql:8.0
+    ports:
+      - "53306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_PORT: 3306
+      MYSQL_ROOT_HOST: "%"
