@@ -83,7 +83,7 @@ describe App do
           expect(session.siteIP).to eq(site_ip_address)
           expect(session.task_id).to eq(task_id)
           expect(session.authentication_reply).to eq(authentication_reply)
-          expect(session.eap_type).to eq("")
+          expect(session.eap_type).to eq("MSCHAPV2")
         end
 
         context 'Given the "Called Station ID" is an MAC address' do
