@@ -134,13 +134,14 @@ export PATH=$GEM_HOME/bin:$PATH
 export DB_NAME='sessiondb'
 export DB_PASS='password'
 export DB_USER='root'
-export DB_PORT=13106
+export DB_PORT=53306
 export DB_HOSTNAME='0.0.0.0'
 export USER_DB_NAME='userdb'
 export USER_DB_PASS='password'
 export USER_DB_USER='root'
-export USER_DB_PORT=23106
+export USER_DB_PORT=53306
 export USER_DB_HOSTNAME='0.0.0.0'
+
 ```
 
 Running API
