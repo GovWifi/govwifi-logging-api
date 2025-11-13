@@ -91,15 +91,15 @@ module Logging
     def connection_type(eap_type)
       # Map EAP types received into what will be logged for that field
       case eap_type
-        when "EAP-TLS"
-          "EAP-TLS"
-        when "NAK"
-          "EAP-TLS"
-        when "PEAP"
-          "MSCHAP"
-        else
-          # Defaulting to "MSCHAP"
-          "MSCHAP"
+      when "EAP-TLS"
+        "EAP-TLS"
+      when "NAK"
+        "EAP-TLS"
+      when "PEAP"
+        "MSCHAP"
+      else
+        # Defaulting to "MSCHAP"
+        "MSCHAP"
       end
     end
 

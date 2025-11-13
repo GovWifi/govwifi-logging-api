@@ -16,7 +16,7 @@ describe App do
     let(:task_id) { "arn:aws:ecs:task_id" }
     let(:authentication_reply) { "This is a reply message" }
     let(:eap_type) { "MSCHAPV2" }
-    let(:request_body)  do
+    let(:request_body) do
       {
         username:,
         cert_name:,
