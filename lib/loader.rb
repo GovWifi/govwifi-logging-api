@@ -14,6 +14,18 @@ DB = Sequel.connect(
   max_connections: 32,
 )
 
+READ_REPLICA_DB = Sequel.connect(
+  adapter: "mysql2",
+  # host: ENV.fetch("DB_HOSTNAME"),
+  host: ENV.fetch("DB_READ_REPLICA_HOSTNAME"),
+  database: ENV.fetch("DB_NAME"),
+  user: ENV.fetch("DB_USER"),
+  password: ENV.fetch("DB_PASS"),
+  read_timeout: DB_CONNECTION_TIMEOUT,
+  max_connections: 32,
+)
+
+
 USER_DB = Sequel.connect(
   adapter: "mysql2",
   host: ENV.fetch("USER_DB_HOSTNAME"),
