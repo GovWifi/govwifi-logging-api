@@ -1,4 +1,3 @@
-
 services:
   db:
     platform: linux/x86_64
@@ -9,7 +8,7 @@ services:
     expose:
       - "3306"
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       timeout: 5s
       retries: 10
 
@@ -22,7 +21,7 @@ services:
     expose:
       - "3306"
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
       timeout: 5s
       retries: 10
 
@@ -34,12 +33,13 @@ services:
       DB_PASS: root
       DB_USER: root
       DB_HOSTNAME: db
+      DB_READ_REPLICA_HOSTNAME: db
       USER_DB_NAME: govwifi_user_test
       USER_DB_PASS: root
       USER_DB_USER: root
       USER_DB_HOSTNAME: user_db
     volumes:
-       - ".:/usr/src/app"
+      - ".:/usr/src/app"
     expose:
       - "8080"
     depends_on:
