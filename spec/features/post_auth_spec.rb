@@ -15,6 +15,7 @@ describe App do
     let(:cert_issuer) { "\/CN=Intermediate CA" }
     let(:task_id) { "arn:aws:ecs:task_id" }
     let(:authentication_reply) { "This is a reply message" }
+    let(:eap_type) { "MSCHAPV2" }
     let(:request_body) do
       {
         username:,
@@ -28,6 +29,7 @@ describe App do
         cert_serial:,
         cert_subject:,
         cert_issuer:,
+        eap_type:,
       }.to_json
     end
     let(:post_auth_request) { post "/logging/post-auth", request_body }
@@ -51,12 +53,14 @@ describe App do
           let(:cert_serial) { "some_cert_serial" }
           let(:cert_subject) { "some_cert_subject" }
           let(:cert_issuer) { "some_cert_issuer" }
+          let(:eap_type) { "TLS" }
 
           it "records the cert name" do
             expect(session.cert_name).to eq(cert_name)
             expect(session.cert_serial).to eq(cert_serial)
             expect(session.cert_subject).to eq(cert_subject)
             expect(session.cert_issuer).to eq(cert_issuer)
+            expect(session.eap_type).to eq("EAP-TLS")
           end
         end
 
@@ -79,6 +83,7 @@ describe App do
           expect(session.siteIP).to eq(site_ip_address)
           expect(session.task_id).to eq(task_id)
           expect(session.authentication_reply).to eq(authentication_reply)
+          expect(session.eap_type).to eq("MSCHAP")
         end
 
         context 'Given the "Called Station ID" is an MAC address' do
