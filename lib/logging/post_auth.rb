@@ -2,7 +2,6 @@ require "logger"
 
 module Logging
   class PostAuth
-
     def initialize(logger: Logger.new($stdout))
       @logger = logger
     end
@@ -19,17 +18,16 @@ module Logging
           @logger.info("Setting EAP-Type to 'TLS' as cert_name is present")
           create_cert_session
         else
-           handle_username_request
+          handle_username_request
         end
-
       else
         @logger.info("EAP-Type is present and is '#{eap_type}'")
         # The EAP Type determines whether this is a certificate-based or a
         # username/password MSCHAP connection session.
         return handle_username_request unless connection_type(eap_type) == "EAP-TLS"
+
         create_cert_session
       end
-
     end
 
   private
@@ -50,7 +48,7 @@ module Logging
     end
 
     def handle_invalid_username
-      puts "#{username} was invalid due to being longer than #{} characters, logging rejected"
+      puts "#{username} was invalid due to being longer than #{VALID_USERNAME_LENGTH} characters, logging rejected"
     end
 
     def create_cert_session
