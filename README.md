@@ -136,6 +136,7 @@ export DB_PASS='password'
 export DB_USER='root'
 export DB_PORT=53306
 export DB_HOSTNAME='0.0.0.0'
+export DB_READ_REPLICA_HOSTNAME='0.0.0.0'
 export USER_DB_NAME='userdb'
 export USER_DB_PASS='password'
 export USER_DB_USER='root'
@@ -181,7 +182,7 @@ Create a file called `logging-api-post.json` and add the content:
     "cert_serial": "192550388a309ecf982ad7fdc0b24f13b4a1ef20",
     "cert_subject": "/CN=Client",
     "cert_issuer": "/CN=Smoke Test Intermediate CA",
-    "eap_type": "EAP-TLS"
+    "eap_type": "TLS"
 }
 ```
 
