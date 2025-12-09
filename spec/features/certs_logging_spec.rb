@@ -19,7 +19,7 @@ describe App do
           authentication_result:,
           task_id: "arn:aws:ecs:task_id",
           authentication_reply:,
-          eap_type: "EAP-TLS",
+          eap_type: "TLS",
         }.to_json
       end
       let(:post_auth_request) { post "/logging/post-auth", request_body }
@@ -87,7 +87,7 @@ describe App do
       expect(Session.first[:mac]).to eq(mac)
     end
     it "writes the eap_type" do
-      expect(Session.first[:eap_type]).to eq("MSCHAPV2")
+      expect(Session.first[:eap_type]).to eq("MSCHAP")
     end
   end
 end
