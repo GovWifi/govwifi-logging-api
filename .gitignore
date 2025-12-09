@@ -1,3 +1,6 @@
 # SimpleCov output
 coverage
 .DS_Store
+.bundle
+.gems
+.envrc

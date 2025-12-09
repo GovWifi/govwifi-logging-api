@@ -10,11 +10,11 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
                COUNT(CASE WHEN success='0' THEN 1 end) AS Failures
              FROM sessions WHERE start BETWEEN date_sub('#{sql_time}', INTERVAL 1 HOUR) AND '#{sql_time}'
              GROUP BY siteIP"
-      DB.fetch(sql).to_a
+      READ_REPLICA_DB.fetch(sql).to_a
     end
 
     def active_users_stats(period:, date:)
-      DB.fetch("
+      READ_REPLICA_DB.fetch("
         SELECT
           count(distinct(username)) as total
         FROM sessions WHERE start BETWEEN date_sub('#{date - 1}', INTERVAL 1 #{period}) AND '#{date - 1}'
@@ -39,7 +39,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
                 roam_count > 1)
              as roaming_count"
 
-      DB.fetch(sql).first
+      READ_REPLICA_DB.fetch(sql).first
     end
 
     def cba_users_count(period:)
@@ -53,7 +53,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
              AND
                success = 1"
 
-      DB.fetch(sql).first
+      READ_REPLICA_DB.fetch(sql).first
     end
 
     def average_unique_devices_per_user(period:, date:)
@@ -65,7 +65,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
                 AND start > DATE_SUB('#{date.strftime('%Y-%m-%d %H:%M:%S')}', INTERVAL 1 #{period})
               GROUP BY username
             ) AS user_devices"
-      DB.fetch(sql).first
+      READ_REPLICA_DB.fetch(sql).first
     end
   end
 end
