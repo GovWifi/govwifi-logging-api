@@ -17,8 +17,8 @@ DB = Sequel.connect(
 
 READ_REPLICA_DB = Sequel.connect(
   adapter: "mysql2",
-  # host: ENV.fetch("DB_HOSTNAME"),
   host: ENV.fetch("DB_READ_REPLICA_HOSTNAME"),
+  port: ENV.fetch("DB_PORT", 3306),
   database: ENV.fetch("DB_NAME"),
   user: ENV.fetch("DB_USER"),
   password: ENV.fetch("DB_PASS"),
