@@ -1,8 +1,8 @@
 # SimpleCov output
 coverage
+# MacOS Finder droppings
 .DS_Store
-
-# ignore host development files
+# Local development files
+.bundle
 .gems
 .envrc
-.bundle
