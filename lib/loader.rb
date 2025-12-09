@@ -7,6 +7,7 @@ require "json"
 DB = Sequel.connect(
   adapter: "mysql2",
   host: ENV.fetch("DB_HOSTNAME"),
+  port: ENV.fetch("DB_PORT", 3306),
   database: ENV.fetch("DB_NAME"),
   user: ENV.fetch("DB_USER"),
   password: ENV.fetch("DB_PASS"),
@@ -16,8 +17,8 @@ DB = Sequel.connect(
 
 READ_REPLICA_DB = Sequel.connect(
   adapter: "mysql2",
-  # host: ENV.fetch("DB_HOSTNAME"),
   host: ENV.fetch("DB_READ_REPLICA_HOSTNAME"),
+  port: ENV.fetch("DB_PORT", 3306),
   database: ENV.fetch("DB_NAME"),
   user: ENV.fetch("DB_USER"),
   password: ENV.fetch("DB_PASS"),
@@ -28,6 +29,7 @@ READ_REPLICA_DB = Sequel.connect(
 USER_DB = Sequel.connect(
   adapter: "mysql2",
   host: ENV.fetch("USER_DB_HOSTNAME"),
+  port: ENV.fetch("USER_DB_PORT", 3306),
   database: ENV.fetch("USER_DB_NAME"),
   user: ENV.fetch("USER_DB_USER"),
   password: ENV.fetch("USER_DB_PASS"),
