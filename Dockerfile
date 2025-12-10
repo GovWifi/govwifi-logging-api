@@ -1,4 +1,4 @@
-FROM ruby:3.4.7-alpine
+FROM ruby:3.4.7-alpine3.22
 ARG BUNDLE_INSTALL_CMD
 
 ENV S3_PUBLISHED_LOCATIONS_IPS_BUCKET 'stub-bucket'
@@ -11,9 +11,9 @@ COPY Gemfile Gemfile.lock .ruby-version ./
 
 
 RUN apk --no-cache add --virtual .build-deps build-base && \
-apk --no-cache add mysql-dev && \
-${BUNDLE_INSTALL_CMD} && \
-apk del .build-deps
+    apk --no-cache add mysql-dev && \
+    ${BUNDLE_INSTALL_CMD} && \
+    apk del .build-deps
 
 COPY . .
 
