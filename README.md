@@ -93,9 +93,10 @@ The [Makefile](Makefile) contains commonly used commands for working with this a
 
 ### Running API outside docker
 
-On MacOS I wanted a quicker feedback loop than running the API in Docker. This
-is how I got the API running on my box using Homebrew. I also use
-[Direnv](https://direnv.net/) to manage the environment to run the API in.
+This runs directly on the MacOS host. Its a quicker feedback loop than running
+the API in Docker. This is how to get the API running using Homebrew. The
+tool [Direnv](https://direnv.net/) was used to manage the environment the API
+runs in.
 
 Install Dependancies
 
@@ -109,7 +110,7 @@ brew install openssl@3
 bundle config set with 'test'
 
 # Work around issue install ruby mysql2 gem on homebrew
-# -
+# This may not still be an issue. It is kept for future reference.
 #
 #1 warning generated.
 #compiling statement.c
@@ -152,7 +153,7 @@ Running API
 # In one terminal run the dependancies needed by the Logging API:
 docker compose -f docker-compose-local-dev.yml down --remove-orphans ; docker compose -f docker-compose-local-dev.yml up
 
-# Create databases needed for local dev in the mysqk
+# In another terminal create the databases needed for local dev in the mysql
 mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "create database sessiondb"
 mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "create database userdb"
 mysql -uroot -ppassword -h127.0.0.1 -P53306 userdb < mysql_user/schema.sql
