@@ -33,27 +33,17 @@ module Logging
   private
 
     VALID_MAC_LENGTH = 17
-    VALID_USERNAME_LENGTH = 254
+    VALID_USERNAME_LENGTH = 6
+    VALID_SSL_USERNAME_LENGTH = 254
 
     def create_user_session
-      if valid_username?(username)
-        Session.create(session_params.merge(username: username.to_s.upcase))
-      else
-        handle_invalid_username
-      end
-    end
-
-    def valid_username?(username)
-      username.to_s.length <= VALID_USERNAME_LENGTH
-    end
-
-    def handle_invalid_username
-      puts "#{username} was invalid due to being longer than #{VALID_USERNAME_LENGTH} characters, logging rejected"
+      Session.create(session_params.merge(username: user_name(VALID_USERNAME_LENGTH).upcase))
     end
 
     def create_cert_session
       Session.create(
         session_params.merge(
+          ssl_username: user_name(VALID_SSL_USERNAME_LENGTH),
           cert_name: @params.fetch("cert_name"),
           cert_serial: @params.fetch("cert_serial"),
           cert_issuer: @params.fetch("cert_issuer"),
@@ -84,8 +74,14 @@ module Logging
       @params.fetch("authentication_result") == "Access-Accept"
     end
 
-    def username
-      @params.fetch("username")
+    def user_name(max_length)
+      value = @params.fetch("username")
+      if value.to_s.length <= max_length
+        name = value[0..(max_length - 1)]
+        @logger.info "Truncated recieved username from '#{value}' to '#{name}' as its greater than '#{max_length}' characters."
+      end
+
+      name
     end
 
     def formatted_mac(unformatted_mac)
@@ -129,7 +125,7 @@ module Logging
     end
 
     def handle_username_request
-      return true if username == "HEALTH"
+      return true if user_name(VALID_USERNAME_LENGTH) == "HEALTH"
 
       create_user_session
     end
