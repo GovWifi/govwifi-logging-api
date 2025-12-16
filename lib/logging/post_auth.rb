@@ -37,7 +37,7 @@ module Logging
     VALID_SSL_USERNAME_LENGTH = 254
 
     def create_user_session
-      Session.create(session_params.merge(username: user_name(VALID_USERNAME_LENGTH).upcase))
+      Session.create(session_params.merge(username: user_name(VALID_USERNAME_LENGTH).to_s.upcase))
     end
 
     def create_cert_session
@@ -75,10 +75,12 @@ module Logging
     end
 
     def user_name(max_length)
-      value = @params.fetch("username")
-      if value.to_s.length <= max_length
+      value = @params.fetch("username").to_s
+      if value.length > max_length
         name = value[0..(max_length - 1)]
         @logger.info "Truncated recieved username from '#{value}' to '#{name}' as its greater than '#{max_length}' characters."
+      else
+        name = value
       end
 
       name
