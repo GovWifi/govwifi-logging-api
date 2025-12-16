@@ -110,7 +110,6 @@ brew install openssl@3
 bundle config set with 'test'
 
 # Work around issue install ruby mysql2 gem on homebrew
-# This may not still be an issue. It is kept for future reference.
 #
 #1 warning generated.
 #compiling statement.c
@@ -118,9 +117,11 @@ bundle config set with 'test'
 #ld: library 'zstd' not found
 #clang: error: linker command failed with exit code 1 (use -v to see invocation)
 #
+# This may not still be an issue. It is kept for future reference.
+#
 gem install mysql2 -v '0.5.6' -- --with-opt-dir=$(brew --prefix openssl) --with-ldflags=-L/opt/homebrew/opt/zstd/lib
 
-bundle install --with test
+bundle install
 
 ```
 
