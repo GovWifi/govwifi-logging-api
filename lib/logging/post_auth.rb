@@ -10,7 +10,7 @@ module Logging
       @params = params
 
       if eap_type.empty?
-        @logger.info "EAP-Type missing from RADIUS server request, falling back to cert_name presence to determine connection type"
+        @logger.info("EAP-Type missing from RADIUS server request, falling back to cert_name presence to determine connection type")
 
         # TODO: Remove this branch once all RADIUS servers are updated to send EAP-Type
         if @params["cert_name"].present?
@@ -23,7 +23,7 @@ module Logging
       else
         # The EAP Type determines whether this is a certificate-based or a
         # username/password MSCHAP connection session.
-        @logger.info("Attempting to handling a user/password request '#{eap_type}'")
+        @logger.info("Attempting to handle a user/password request '#{eap_type}'")
         return handle_username_request unless connection_type(eap_type) == "EAP-TLS"
 
         @logger.info("No, '#{eap_type}' is a CBA request, attempting to handle that")
