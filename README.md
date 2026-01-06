@@ -91,6 +91,119 @@ The [Makefile](Makefile) contains commonly used commands for working with this a
 - `make serve` starts the API server on localhost.
 - `make lint` runs the gov-uk linter.
 
+### Running API outside docker
+
+This runs directly on the MacOS host. Its a quicker feedback loop than running
+the API in Docker. This is how to get the API running using Homebrew. The
+tool [Direnv](https://direnv.net/) was used to manage the environment the API
+runs in.
+
+Install Dependancies
+
+```bash
+
+brew install mysql
+
+brew install openssl@3
+
+# include development dependancies
+bundle config set with 'test'
+
+# Work around issue install ruby mysql2 gem on homebrew
+#
+#1 warning generated.
+#compiling statement.c
+#linking shared-object mysql2/mysql2.bundle
+#ld: library 'zstd' not found
+#clang: error: linker command failed with exit code 1 (use -v to see invocation)
+#
+# This may not still be an issue. It is kept for future reference.
+#
+gem install mysql2 -v '0.5.6' -- --with-opt-dir=$(brew --prefix openssl) --with-ldflags=-L/opt/homebrew/opt/zstd/lib
+
+bundle install
+
+```
+
+API Configuration
+
+Create the `.envrc` inside the checkout root. For example my file looked like:
+
+```bash
+export GEM_HOME=./.gems
+export PATH=$GEM_HOME/bin:$PATH
+
+export DB_NAME='sessiondb'
+export DB_PASS='password'
+export DB_USER='root'
+export DB_PORT=53306
+export DB_HOSTNAME='0.0.0.0'
+export DB_READ_REPLICA_HOSTNAME='0.0.0.0'
+export USER_DB_NAME='userdb'
+export USER_DB_PASS='password'
+export USER_DB_USER='root'
+export USER_DB_PORT=53306
+export USER_DB_HOSTNAME='0.0.0.0'
+
+```
+
+Running API
+
+```bash
+
+# In one terminal run the dependancies needed by the Logging API:
+docker compose -f docker-compose-local-dev.yml down --remove-orphans ; docker compose -f docker-compose-local-dev.yml up
+
+# In another terminal create the databases needed for local dev in the mysql
+mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "create database sessiondb"
+mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "create database userdb"
+mysql -uroot -ppassword -h127.0.0.1 -P53306 userdb < mysql_user/schema.sql
+
+# Run the db migrations
+bundle exec rake db:migrate
+
+# Run the logging api
+bundle exec puma -p 8080
+
+```
+
+Example logging POST
+
+Create a file called `logging-api-post.json` and add the content:
+
+```json
+{
+    "username": "test@client.org",
+    "mac": "02-00-00-00-00-01",
+    "called_station_id": "",
+    "site_ip_address": "35.178.48.11",
+    "cert_name": "Client",
+    "authentication_result": "Access-Accept",
+    "authentication_reply": "",
+    "task_id": "902ad495ccf042d3867fba1dcabcfcb9",
+    "cert_serial": "192550388a309ecf982ad7fdc0b24f13b4a1ef20",
+    "cert_subject": "/CN=Client",
+    "cert_issuer": "/CN=Smoke Test Intermediate CA",
+    "eap_type": "TLS"
+}
+```
+
+Now using cURL command you can send this to a running API instance. For example
+
+```bash
+
+curl -d@logging-api-post.json http://0.0.0.0:8080/logging/post-auth
+
+```
+
+Running linter checks
+
+```bash
+
+bundle exec robucop
+
+```
+
 ### Deploying changes
 
 Merging to `master` will automatically deploy this API to Dev and Staging via the Pipeline
