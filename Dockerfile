@@ -12,6 +12,7 @@ COPY Gemfile Gemfile.lock .ruby-version ./
 
 RUN apk --no-cache add --virtual .build-deps build-base && \
     apk --no-cache add mysql-dev && \
+    apk --no-cache add git && \
     ${BUNDLE_INSTALL_CMD} && \
     apk del .build-deps
 
