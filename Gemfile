@@ -20,7 +20,9 @@ group :test do
   gem "mysql2", "~> 0.5.7"
   gem "rack-test"
   gem "rspec"
-  gem "rubocop-govuk"
+  gem "rubocop", "~> 1.82.1"
+  # Pull directly from GitHub main to get the latest gemspec changes, till it gets released.
+  gem "rubocop-govuk", github: "alphagov/rubocop-govuk", branch: "main", require: false
   gem "simplecov"
   gem "timecop"
   gem "webmock"
