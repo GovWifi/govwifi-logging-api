@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# require "logger"
+
 module Performance::Metrics
   # Utility class to generate and publish a set of metrics for the
   # provided period and date arguments. It delegates the actual
@@ -14,6 +16,8 @@ module Performance::Metrics
       roaming_users: Performance::UseCase::RoamingUsers,
       volumetrics: Performance::UseCase::Volumetrics,
       user_devices: Performance::UseCase::UserDevices,
+      month_to_date_active_users: Performance::UseCase::MonthToDateActiveUsers,
+      monthly_rolling_active_users: Performance::UseCase::MonthlyRollingActiveUsers,
     }.freeze
 
     def initialize(metric:, period: :daily, date: Date.today)
@@ -28,7 +32,7 @@ module Performance::Metrics
     def to_s3
       return if stats.nil?
 
-      S3Publisher.publish "#{@metric}/#{key}", stats
+      S3Publisher.publish("#{@metric}/#{key}", stats)
     end
 
     def to_elasticsearch
@@ -44,6 +48,8 @@ module Performance::Metrics
   private
 
     def stats
+      # logger = Logger.new($stdout)
+      # logger.info(@stats)
       @stats ||= STATS[@metric].new(period: @period, date: @date).fetch_stats
     end
   end

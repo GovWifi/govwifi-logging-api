@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+desc "Sync s3 to data bucket"
 task :sync_s3_to_data_bucket, %i[source_bucket dest_bucket] => :load_env do |_, args|
   puts "Copy from #{args[:source_bucket]} to #{args[:dest_bucket]}"
   %w[volumetrics active_users roaming_users completion_rate user_devices].each do |dataset|

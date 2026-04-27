@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 namespace :db do
-  desc "Run migrations"
+  desc "Run database migrations - Creates the 'sessions' and 'ip_locations' tables"
   task :migrate, [:version] do |_t, args|
     require "sequel/core"
     Sequel.extension :migration

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Smoketests::SmoketestCleanup
   SESSION_BATCH_SIZE = 50
   def clean

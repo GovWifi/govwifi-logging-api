@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class MacFormatter
   def execute(mac:)
     ietf_format(only_hex(uppercase(mac.to_s)))

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Performance::Repository::SignUp < Sequel::Model(USER_DB[:userdetails])
   dataset_module do
     def all(date)

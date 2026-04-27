@@ -1,5 +1,6 @@
-# Use to run the dependancies needed by a locally installed logging API. The
-# API will be run by the developer outside of docker compose.
+# Provides database support for a locally hosted instance of the Logging API.
+# The API app itself will be run by the developer outside of Docker; this offers
+# a faster feedback loop when developing. Refer to the README for instructions.
 services:
   user_and_session_db:
     image: mysql:8.0

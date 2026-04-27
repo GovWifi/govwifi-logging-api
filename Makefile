@@ -22,7 +22,7 @@ lint: build
 
 test: serve
 	$(DOCKER_COMPOSE) run --rm app /usr/src/app/create_user_details.sh
-	$(DOCKER_COMPOSE) run --rm app rspec
+	$(DOCKER_COMPOSE) run --rm app rspec --format documentation
 	$(MAKE) stop
 
 stop:

@@ -1,17 +1,17 @@
 # frozen_string_literal: true
 
-class Performance::UseCase::ActiveUsers
+class Performance::UseCase::MonthToDateActiveUsers
   def initialize(period:, date: Date.today)
     @period = period
     @date = date
   end
 
   def fetch_stats
-    result = repository.active_users_stats(period:, date:) || Hash.new(0)
+    result = repository.month_to_date_active_users(period:, date:) || Hash.new(0)
 
     {
       users: result[:total],
-      metric_name: "active-users",
+      metric_name: "month-to-date-active-users",
       period:,
       date: date.to_s,
     }

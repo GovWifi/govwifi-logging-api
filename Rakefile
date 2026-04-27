@@ -1,4 +1,6 @@
-desc "require all classes"
+# frozen_string_literal: true
+
+desc "Setup the database environment and load all modules and classes"
 task :load_env do
   # Set a long connection timeout here, since some of the queries run
   # through the rake tasks may take several hours to complete

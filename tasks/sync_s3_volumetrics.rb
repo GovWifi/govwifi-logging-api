@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+desc "Write records from S3 to Elasticsearch"
 task sync_s3_volumetrics: :load_env do
   bucket = ENV.fetch("S3_METRICS_BUCKET")
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Performance::UseCase::CompletionRate
   def initialize(date: Date.today, period: "week")
     @date = date

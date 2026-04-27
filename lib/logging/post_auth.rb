@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "logger"
 
 module Logging
@@ -79,7 +81,7 @@ module Logging
       value = @params.fetch("username").to_s
       if value.length > max_length
         name = value[0..(max_length - 1)]
-        @logger.info("Truncated recieved username from '#{value}' to '#{name}' as its greater than '#{max_length}' characters.")
+        @logger.info("Truncated received username from '#{value}' to '#{name}' as its greater than '#{max_length}' characters.")
       else
         name = value
       end

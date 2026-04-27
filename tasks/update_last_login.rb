@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require "date"
 
+desc "Update last login"
 task update_yesterdays_last_login: :load_env do
   date = Date.today.prev_day
   logger = Logger.new($stdout)

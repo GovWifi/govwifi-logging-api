@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Gdpr::Gateway::SetLastLogin
   def set(date:, usernames:)
     usernames.each_slice(100) do |usernames_slice|

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Performance::UseCase::NewUsers
   def initialize(period:, date: Date.today)
     last_month = date << 1

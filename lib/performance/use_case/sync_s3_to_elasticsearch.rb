@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "logger"
 
 class Performance::UseCase::SyncS3ToElasticsearch
@@ -15,6 +17,6 @@ class Performance::UseCase::SyncS3ToElasticsearch
       record_count += 1
     end
 
-    @logger.info "Writing #{record_count} records from S3 to ElasticSearch"
+    @logger.info "Writing #{record_count} records from S3 to Elasticsearch"
   end
 end

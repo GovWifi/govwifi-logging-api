@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Performance::Metrics
   class S3Publisher
     def self.publish(key, stats)

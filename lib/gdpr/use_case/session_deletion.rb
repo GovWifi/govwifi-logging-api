@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Gdpr::UseCase::SessionDeletion
   def initialize(session_gateway:)
     @session_gateway = session_gateway

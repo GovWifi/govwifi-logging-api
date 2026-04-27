@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Performance::UseCase::RoamingUsers
   def initialize(period:, date: Date.today)
     @period = period.to_s
@@ -26,11 +28,11 @@ private
   end
 
   def roaming_users_count
-    repository.roaming_users_count(period:).fetch(:total_roaming)
+    repository.roaming_users_count(period:, date:).fetch(:total_roaming)
   end
 
   def cba_users_count
-    repository.cba_users_count(period:).fetch(:cba_count)
+    repository.cba_users_count(period:, date:).fetch(:cba_count)
   end
 
   attr_reader :period, :date

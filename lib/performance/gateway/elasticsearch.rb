@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Performance::Gateway::Elasticsearch
   def initialize(index)
     @index = index

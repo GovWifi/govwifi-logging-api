@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Performance::UseCase::UserDevices
   def initialize(period:, date: Date.today)
     @period = period

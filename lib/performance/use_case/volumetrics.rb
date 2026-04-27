@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Performance::UseCase::Volumetrics
   attr_reader :period
 
