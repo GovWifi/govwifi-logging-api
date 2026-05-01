@@ -1,36 +1,29 @@
 require "logger"
-require "date"
-
+require "./lib/performance/metrics"
 logger = Logger.new($stdout)
 
-desc "Publish month to date total active users (daily derived)"
-task publish_month_to_date_total_active_users_metrics: [:load_env] do
-  logger.info("Creating 'publish_month_to_date_total_active_metrics' metrics for S3 with today's date")
-
-  def metric
-    "month_to_date_total_active_users"
-  end
-
-  def key
-    "month_to_date_total_active-day-#{Date.today}"
-  end
-
-  def to_s3
-    return if stats.nil?
-
-    Performance::Metrics::S3Publisher.publish("#{metric}/#{key}", stats)
-  end
-
-  def stats
-    Performance::UseCase::MonthToDateTotalActiveUsers.new.fetch_stats
-  end
-
-  logger.info("[#{key}] Fetching and uploading metrics...")
-  to_s3
-  logger.info("[#{key}] Done.")
+task synchronize_ip_locations: :load_env do
+  Performance::Metrics::IPSynchronizer.new.execute
 end
 
-# Add three more tasks here... or create three additional standalone task files?
-# Do I create a new hash containing these daily tasks and loop over them like the
-# metric_sender does for its STATS? ... and therefore create a class definition
-# within this file.
+PERIOD = Performance::Metrics::PERIODS.select { |adverbial, _period| adverbial == :daily }
+PERIOD.each do |adverbial, period|
+  name = "publish_#{adverbial}_total_metrics".to_sym
+
+  dependent_tasks = adverbial == :daily ? %i[load_env synchronize_ip_locations] : [:load_env]
+
+  task name, [:date] => dependent_tasks do |_, args|
+    args.with_defaults(date: Date.today.to_s)
+
+    logger.info("Creating #{adverbial} total metrics for S3 with #{args[:date]}")
+
+    Performance::Metrics::DailyMetricSender::STATS.each_key do |metrics|
+      metric_sender = Performance::Metrics::DailyMetricSender.new(period:, date: Date.parse(args[:date]), metric: metrics)
+      logger.info("BEGIN: [#{metric_sender.key}] Fetching and uploading metrics...")
+
+      metric_sender.to_s3
+
+      logger.info("END: [#{metric_sender.key}] Done.")
+    end
+  end
+end

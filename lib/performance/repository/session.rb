@@ -70,7 +70,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
 
     def month_to_date_total_roaming_users
       sql = "SELECT
-              DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS MTD,
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
               COUNT(*) AS active_count
             FROM
               (SELECT
@@ -82,7 +82,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
               WHERE
                 s.success = 1
               AND
-                start >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                start >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
               GROUP BY
                 username
               HAVING
@@ -94,7 +94,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
 
     def monthly_rolling_window_total_roaming_users
       sql = "SELECT
-              CURDATE() AS run_date,
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
               COUNT(*) AS rolling_total_roaming
             FROM
               (SELECT
@@ -106,7 +106,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
               WHERE
                 s.success = 1
               AND
-                start >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                start >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
               GROUP BY
                 username
               HAVING
@@ -118,12 +118,12 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
 
     def month_to_date_total_active_users
       sql = "SELECT
-              DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS run_time,
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
               COUNT(DISTINCT username) AS total
             FROM
               sessions
             WHERE
-              start BETWEEN DATE_FORMAT('2026-02-20', '%Y-%m-01') AND CURRENT_DATE
+              start BETWEEN DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') AND CURRENT_DATE
             AND
               success = 1"
 
@@ -132,7 +132,7 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
 
     def monthly_rolling_window_total_active_users
       sql = "SELECT
-              DATE_FORMAT(CURDATE(), '%Y-%m-%d') AS run_time,
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
               COUNT(DISTINCT username) AS total
             FROM
               sessions
