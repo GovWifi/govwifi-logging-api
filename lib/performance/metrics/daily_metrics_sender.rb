@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "logger"
-
 module Performance::Metrics
   # Utility class to generate and publish a set of metrics for the
   # provided period and date arguments. It delegates the actual
@@ -27,9 +25,6 @@ module Performance::Metrics
 
     def to_s3
       return if stats.nil?
-
-      logger = Logger.new($stdout)
-      logger.info(stats)
 
       S3Publisher.publish "#{@metric}/#{key}", stats
     end
