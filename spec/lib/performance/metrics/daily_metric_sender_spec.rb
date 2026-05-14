@@ -105,4 +105,38 @@ describe Performance::Metrics::DailyMetricSender do
         .to eq(month_to_date_roaming_expected_hash)
     end
   end
+
+  describe "#to_api" do
+    let(:api_endpoint) { "https://metrics.development.wifi.service.gov.uk/v1/record" }
+
+    before do
+      ENV["METRICS_API_ENDPOINT"] = api_endpoint
+      ENV["METRICS_API_BEARER_TOKEN"] = "test-token"
+    end
+
+    it "sends 'monthly rolling total users' stats to the metrics API" do
+      stub = stub_request(:post, api_endpoint)
+
+      monthly_rolling_total.to_api
+
+      expect(stub).to have_been_requested.once
+    end
+
+    it "sends stats to the metrics API" do
+      stub = stub_request(:post, api_endpoint)
+
+      monthly_rolling_total.to_api
+
+      expect(stub).to have_been_requested.once
+    end
+
+    it "sends the correct stats hash" do
+      captured = nil
+      stub_request(:post, api_endpoint).with { |req| captured = JSON.parse(req.body); true }
+
+      monthly_rolling_total.to_api
+
+      expect(captured).to eq(monthly_rolling_total_expected_hash)
+    end
+  end
 end
