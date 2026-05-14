@@ -132,7 +132,10 @@ describe Performance::Metrics::DailyMetricSender do
 
     it "sends the correct stats hash" do
       captured = nil
-      stub_request(:post, api_endpoint).with { |req| captured = JSON.parse(req.body); true }
+      stub_request(:post, api_endpoint).with do |req|
+        captured = JSON.parse(req.body)
+        true
+      end
 
       monthly_rolling_total.to_api
 
