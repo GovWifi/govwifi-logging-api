@@ -29,6 +29,12 @@ module Performance::Metrics
       S3Publisher.publish "#{@metric}/#{key}", stats
     end
 
+    def to_api
+      return if stats.nil?
+
+      ApiPublisher.publish stats
+    end
+
     def key
       "#{@metric}-#{@period}-#{@date}"
     end
