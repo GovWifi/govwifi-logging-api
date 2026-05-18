@@ -55,7 +55,7 @@ describe Performance::Metrics::MetricsApiPublisher do
         end
 
         it "logs a warning" do
-          expect(test_logger).to receive(:warn).with("Metrics API request failed: Connection refused")
+          expect(test_logger).to receive(:warn).with("Metrics API request failed: Connection refused (endpoint: #{api_endpoint})")
           described_class.publish(stats)
         end
       end

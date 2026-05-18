@@ -13,19 +13,19 @@ module Performance::Metrics
         req.body = stats.to_json
       end
     rescue Faraday::Error => e
-      logger.warn("Metrics API request failed: #{e.message}")
+      logger.warn("Metrics API request failed: #{e.message} (endpoint: #{ENV.fetch('METRICS_API_ENDPOINT', 'unknown')})")
     end
 
     def self.connection
       @connection ||= Faraday.new(url: ENV.fetch("METRICS_API_ENDPOINT"))
     end
 
-    def self.logger
-      @logger ||= Logger.new($stdout)
-    end
-
     class << self
       attr_writer :logger
+
+      def logger
+        @logger ||= Logger.new($stdout)
+      end
     end
   end
 end
