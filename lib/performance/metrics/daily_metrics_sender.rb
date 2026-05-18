@@ -32,7 +32,7 @@ module Performance::Metrics
     def to_api
       return if stats.nil?
 
-      ApiPublisher.publish stats
+      MetricsApiPublisher.publish stats
     end
 
     def key
