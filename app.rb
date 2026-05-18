@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "sequel"
-require "sensible_logging"
+require "semantic_logger"
 require "sinatra/base"
 require "sinatra/json"
 
@@ -11,23 +11,49 @@ DB_CONNECTION_TIMEOUT = 10
 
 require "./lib/loader"
 
+class RequestBodyLogger
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    env["rack.input"]&.rewind
+    body = env["rack.input"]&.read
+    env["rack.input"]&.rewind
+    SemanticLogger.tagged(body) do
+      @app.call(env)
+    end
+  end
+end
+
+class RequestLogger
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+    status, headers, body = @app.call(env)
+    duration = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000
+    SemanticLogger["Rack"].info do
+      { method: env["REQUEST_METHOD"],
+        path: env["PATH_INFO"],
+        status:,
+        duration: duration.round(2) }
+    end
+    [status, headers, body]
+  end
+end
+
 class App < Sinatra::Base
   use Raven::Rack if defined? Raven
-  register Sinatra::SensibleLogging
-
-  sensible_logging(
-    logger: Logger.new($stdout),
-    log_tags: [lambda { |req|
-      req.body&.rewind
-      [
-        req.body&.read,
-      ].tap { req.body&.rewind }
-    }],
-  )
+  use RequestBodyLogger
+  use RequestLogger
 
   configure do
     enable :json
-    set :log_level, Logger::DEBUG
+    SemanticLogger.default_level = :debug
+    SemanticLogger.add_appender(io: $stdout)
   end
 
   configure :production, :staging do
@@ -35,7 +61,7 @@ class App < Sinatra::Base
   end
 
   configure :production do
-    set :log_level, Logger::INFO
+    SemanticLogger.default_level = :info
   end
 
   get "/" do
