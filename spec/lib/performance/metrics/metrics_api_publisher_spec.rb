@@ -12,12 +12,14 @@ describe Performance::Metrics::MetricsApiPublisher do
   describe ".publish" do
     let(:stats) { { "metric_name" => "monthly-rolling-window-total-active-users", "users" => 0 } }
 
-    it "POSTs stats to the metrics API" do
-      stub = stub_request(:post, api_endpoint)
+    it "POSTs stats to the metrics API and returns the Faraday response" do
+      stub = stub_request(:post, api_endpoint).to_return(status: 201, body: "created")
 
-      described_class.publish(stats)
+      response = described_class.publish(stats)
 
       expect(stub).to have_been_requested.once
+      expect(response).to be_a(Faraday::Response)
+      expect(response.status).to eq(201)
     end
 
     it "sends the stats as JSON with auth headers" do
@@ -50,8 +52,8 @@ describe Performance::Metrics::MetricsApiPublisher do
           stub_request(:post, api_endpoint).to_raise(Faraday::ConnectionFailed.new("Connection refused"))
         end
 
-        it "does not raise an error" do
-          expect { described_class.publish(stats) }.not_to raise_error
+        it "does not raise an error and returns nil" do
+          expect(described_class.publish(stats)).to be_nil
         end
 
         it "logs a warning" do
@@ -65,8 +67,8 @@ describe Performance::Metrics::MetricsApiPublisher do
           stub_request(:post, api_endpoint).to_timeout
         end
 
-        it "does not raise an error" do
-          expect { described_class.publish(stats) }.not_to raise_error
+        it "does not raise an error and returns nil" do
+          expect(described_class.publish(stats)).to be_nil
         end
 
         it "logs a warning" do

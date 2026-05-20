@@ -14,13 +14,14 @@ module Performance::Metrics
       month_to_date_roaming: Performance::UseCase::MonthToDateTotalRoamingUsers,
     }.freeze
 
-    def initialize(metric:, period: :daily, date: Date.today)
+    def initialize(metric:, period: :daily, date: Date.today, logger: Logger.new($stdout))
       raise ArgumentError unless PERIODS.values.include? period
       raise ArgumentError unless STATS.keys.include? metric
 
       @metric = metric
       @period = period
       @date = date
+      @logger = logger
     end
 
     def to_s3
@@ -30,9 +31,21 @@ module Performance::Metrics
     end
 
     def to_api
-      return if stats.nil?
+      if stats.nil?
+        @logger.info("[#{key}] No stats to upload.")
+        return
+      end
 
-      MetricsApiPublisher.publish stats
+      @logger.info("[#{key}] Contacting metrics API...")
+      response = MetricsApiPublisher.publish(stats)
+
+      if response&.success?
+        @logger.info("[#{key}] Metrics API upload succeeded (status: #{response.status}).")
+      elsif response
+        @logger.warn("[#{key}] Metrics API upload failed (status: #{response.status}): #{response.body}")
+      else
+        @logger.warn("[#{key}] Metrics API upload failed: connection or other error.")
+      end
     end
 
     def key

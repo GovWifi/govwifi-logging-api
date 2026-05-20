@@ -14,6 +14,7 @@ module Performance::Metrics
       end
     rescue Faraday::Error => e
       logger.warn("Metrics API request failed: #{e.message} (endpoint: #{ENV.fetch('METRICS_API_ENDPOINT', 'unknown')})")
+      nil
     end
 
     def self.connection
