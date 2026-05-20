@@ -113,6 +113,14 @@ describe Performance::Metrics::DailyMetricSender do
     end
   end
 
+  let(:monthly_rolling_total_expected_transformed_payload) do
+    {
+      "name" => "monthly-rolling-window-total-active-users",
+      "value" => "0",
+      "datetime" => "#{today}T00:00:00Z"
+    }
+  end
+
   describe "#to_api" do
     let(:api_endpoint) { "https://metrics.development.wifi.service.gov.uk" }
     let(:expected_api_url) { "https://metrics.development.wifi.service.gov.uk/v1/record" }
@@ -147,7 +155,7 @@ describe Performance::Metrics::DailyMetricSender do
 
       monthly_rolling_total.to_api
 
-      expect(captured).to eq(monthly_rolling_total_expected_hash)
+      expect(captured).to eq(monthly_rolling_total_expected_transformed_payload)
     end
 
     context "when stats are present" do

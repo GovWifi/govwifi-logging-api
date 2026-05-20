@@ -11,7 +11,21 @@ describe Performance::Metrics::MetricsApiPublisher do
   end
 
   describe ".publish" do
-    let(:stats) { { "metric_name" => "monthly-rolling-window-total-active-users", "users" => 0 } }
+    let(:stats) do
+      {
+        "metric_name" => "monthly-rolling-window-total-active-users",
+        "users" => 116,
+        "run_time" => "2026-05-20"
+      }
+    end
+
+    let(:expected_payload) do
+      {
+        "name" => "monthly-rolling-window-total-active-users",
+        "value" => "116",
+        "datetime" => "2026-05-20T00:00:00Z"
+      }
+    end
 
     it "POSTs stats to the metrics API and returns the Faraday response" do
       stub = stub_request(:post, expected_url).to_return(status: 201, body: "created")
@@ -23,9 +37,9 @@ describe Performance::Metrics::MetricsApiPublisher do
       expect(response.status).to eq(201)
     end
 
-    it "sends the stats as JSON with auth headers" do
+    it "sends the transformed stats as JSON with auth headers" do
       stub = stub_request(:post, expected_url).with(
-        body: stats.to_json,
+        body: expected_payload.to_json,
         headers: {
           "Authorization" => "Bearer #{api_token}",
           "Content-Type" => "application/json",
@@ -33,6 +47,54 @@ describe Performance::Metrics::MetricsApiPublisher do
       )
 
       described_class.publish(stats)
+
+      expect(stub).to have_been_requested.once
+    end
+
+    it "handles symbol keys in stats" do
+      symbol_stats = {
+        metric_name: "monthly-rolling-window-total-active-users",
+        users: 116,
+        run_time: "2026-05-20"
+      }
+      stub = stub_request(:post, expected_url).with(body: expected_payload.to_json)
+
+      described_class.publish(symbol_stats)
+
+      expect(stub).to have_been_requested.once
+    end
+
+    it "does not append Z to datetime if it already has Z" do
+      stats_with_z = {
+        "metric_name" => "monthly-rolling-window-total-active-users",
+        "users" => 116,
+        "run_time" => "2026-05-20Z"
+      }
+      expected_payload_with_z = {
+        "name" => "monthly-rolling-window-total-active-users",
+        "value" => "116",
+        "datetime" => "2026-05-20Z"
+      }
+      stub = stub_request(:post, expected_url).with(body: expected_payload_with_z.to_json)
+
+      described_class.publish(stats_with_z)
+
+      expect(stub).to have_been_requested.once
+    end
+
+    it "handles missing/nil run_time gracefully" do
+      stats_without_runtime = {
+        "metric_name" => "monthly-rolling-window-total-active-users",
+        "users" => 116
+      }
+      expected_payload_without_runtime = {
+        "name" => "monthly-rolling-window-total-active-users",
+        "value" => "116",
+        "datetime" => nil
+      }
+      stub = stub_request(:post, expected_url).with(body: expected_payload_without_runtime.to_json)
+
+      described_class.publish(stats_without_runtime)
 
       expect(stub).to have_been_requested.once
     end
