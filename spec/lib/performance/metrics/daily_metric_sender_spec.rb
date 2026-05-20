@@ -114,7 +114,8 @@ describe Performance::Metrics::DailyMetricSender do
   end
 
   describe "#to_api" do
-    let(:api_endpoint) { "https://metrics.development.wifi.service.gov.uk/v1/record" }
+    let(:api_endpoint) { "https://metrics.development.wifi.service.gov.uk" }
+    let(:expected_api_url) { "https://metrics.development.wifi.service.gov.uk/v1/record" }
 
     before do
       ENV["METRICS_API_ENDPOINT"] = api_endpoint
@@ -122,7 +123,7 @@ describe Performance::Metrics::DailyMetricSender do
     end
 
     it "sends 'monthly rolling total users' stats to the metrics API" do
-      stub = stub_request(:post, api_endpoint)
+      stub = stub_request(:post, expected_api_url)
 
       monthly_rolling_total.to_api
 
@@ -130,7 +131,7 @@ describe Performance::Metrics::DailyMetricSender do
     end
 
     it "sends stats to the metrics API" do
-      stub = stub_request(:post, api_endpoint)
+      stub = stub_request(:post, expected_api_url)
 
       monthly_rolling_total.to_api
 
@@ -139,7 +140,7 @@ describe Performance::Metrics::DailyMetricSender do
 
     it "sends the correct stats hash" do
       captured = nil
-      stub_request(:post, api_endpoint).with do |req|
+      stub_request(:post, expected_api_url).with do |req|
         captured = JSON.parse(req.body)
         true
       end
@@ -151,7 +152,7 @@ describe Performance::Metrics::DailyMetricSender do
 
     context "when stats are present" do
       before do
-        stub_request(:post, api_endpoint).to_return(status: 200, body: "success")
+        stub_request(:post, expected_api_url).to_return(status: 200, body: "success")
       end
 
       it "logs that it is contacting the metrics API and that the upload succeeded" do
@@ -163,7 +164,7 @@ describe Performance::Metrics::DailyMetricSender do
 
     context "when stats are present but the API request returns a failure status code" do
       before do
-        stub_request(:post, api_endpoint).to_return(status: 500, body: "internal error")
+        stub_request(:post, expected_api_url).to_return(status: 500, body: "internal error")
       end
 
       it "logs that it is contacting the API and that the upload failed with status and body" do
@@ -175,7 +176,7 @@ describe Performance::Metrics::DailyMetricSender do
 
     context "when stats are present but the API request fails due to a connection error" do
       before do
-        stub_request(:post, api_endpoint).to_raise(Faraday::ConnectionFailed.new("Connection refused"))
+        stub_request(:post, expected_api_url).to_raise(Faraday::ConnectionFailed.new("Connection refused"))
       end
 
       it "logs that it is contacting the API and that the upload failed due to a connection error" do
