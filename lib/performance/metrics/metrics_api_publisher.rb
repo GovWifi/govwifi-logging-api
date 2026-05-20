@@ -7,12 +7,11 @@ require "logger"
 module Performance::Metrics
   class MetricsApiPublisher
     def self.publish(stats)
-      response = connection.post do |req|
+      connection.post do |req|
         req.headers["Authorization"] = "Bearer #{ENV.fetch('METRICS_API_BEARER_TOKEN')}"
         req.headers["Content-Type"] = "application/json"
         req.body = stats.to_json
       end
-      response
     rescue Faraday::Error => e
       logger.warn("Metrics API request failed: #{e.message} (endpoint: #{ENV.fetch('METRICS_API_ENDPOINT', 'unknown')})")
       nil
