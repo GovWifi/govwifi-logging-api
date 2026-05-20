@@ -6,20 +6,27 @@ describe Performance::Metrics::DailyMetricSender do
   let(:today) { Date.today }
   let(:s3_client) { Performance::Metrics.fake_s3_client }
 
+  let(:test_logger) { double("logger", info: nil, warn: nil) }
+
   subject(:monthly_rolling_total) do
-    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :monthly_rolling_total)
+    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :monthly_rolling_total, logger: test_logger)
   end
 
   subject(:monthly_rolling_roaming) do
-    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :monthly_rolling_roaming)
+    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :monthly_rolling_roaming, logger: test_logger)
   end
 
   subject(:month_to_date_total) do
-    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :month_to_date_total)
+    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :month_to_date_total, logger: test_logger)
   end
 
   subject(:month_to_date_roaming) do
-    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :month_to_date_roaming)
+    Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :month_to_date_roaming, logger: test_logger)
+  end
+
+  it "defaults to a standard logger writing to $stdout" do
+    sender = Performance::Metrics::DailyMetricSender.new(period: "day", date: today, metric: :monthly_rolling_total)
+    expect(sender.instance_variable_get(:@logger)).to be_a(Logger)
   end
 
   let(:monthly_rolling_total_expected_hash) do
@@ -140,6 +147,54 @@ describe Performance::Metrics::DailyMetricSender do
       monthly_rolling_total.to_api
 
       expect(captured).to eq(monthly_rolling_total_expected_hash)
+    end
+
+    context "when stats are present" do
+      before do
+        stub_request(:post, api_endpoint).to_return(status: 200, body: "success")
+      end
+
+      it "logs that it is contacting the metrics API and that the upload succeeded" do
+        expect(test_logger).to receive(:info).with(/Contacting metrics API/)
+        expect(test_logger).to receive(:info).with(/Metrics API upload succeeded \(status: 200\)/)
+        monthly_rolling_total.to_api
+      end
+    end
+
+    context "when stats are present but the API request returns a failure status code" do
+      before do
+        stub_request(:post, api_endpoint).to_return(status: 500, body: "internal error")
+      end
+
+      it "logs that it is contacting the API and that the upload failed with status and body" do
+        expect(test_logger).to receive(:info).with(/Contacting metrics API/)
+        expect(test_logger).to receive(:warn).with(/Metrics API upload failed \(status: 500\): internal error/)
+        monthly_rolling_total.to_api
+      end
+    end
+
+    context "when stats are present but the API request fails due to a connection error" do
+      before do
+        stub_request(:post, api_endpoint).to_raise(Faraday::ConnectionFailed.new("Connection refused"))
+      end
+
+      it "logs that it is contacting the API and that the upload failed due to a connection error" do
+        expect(test_logger).to receive(:info).with(/Contacting metrics API/)
+        expect(test_logger).to receive(:warn).with(/Metrics API upload failed: connection or other error/)
+        monthly_rolling_total.to_api
+      end
+    end
+
+    context "when stats are nil (no stats to upload)" do
+      before do
+        allow_any_instance_of(Performance::UseCase::MonthlyRollingWindowTotalActiveUsers)
+          .to receive(:fetch_stats).and_return(nil)
+      end
+
+      it "logs that there are no stats to upload" do
+        expect(test_logger).to receive(:info).with(/No stats to upload/)
+        monthly_rolling_total.to_api
+      end
     end
   end
 end
