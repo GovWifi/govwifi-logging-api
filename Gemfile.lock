@@ -146,8 +146,9 @@ GEM
       rubocop (~> 1.81)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
-    semantic_logger (4.18.0)
-      concurrent-ruby (~> 1.0)
+    sensible_logging (0.4.8)
+      activesupport (>= 5.2, < 7.0)
+      rack (>= 2, < 4)
     sentry-raven (3.1.2)
       faraday (>= 1.0)
     sequel (5.103.0)
@@ -208,7 +209,7 @@ DEPENDENCIES
   rexml
   rspec
   rubocop-govuk
-  semantic_logger
+  sensible_logging
   sentry-raven
   sequel
   simplecov
