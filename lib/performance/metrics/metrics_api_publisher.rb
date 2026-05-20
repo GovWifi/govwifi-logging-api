@@ -7,7 +7,7 @@ require "logger"
 module Performance::Metrics
   class MetricsApiPublisher
     def self.publish(stats)
-      connection.post do |req|
+      connection.post("v1/record") do |req|
         req.headers["Authorization"] = "Bearer #{ENV.fetch('METRICS_API_BEARER_TOKEN')}"
         req.headers["Content-Type"] = "application/json"
         req.body = stats.to_json
@@ -18,7 +18,12 @@ module Performance::Metrics
     end
 
     def self.connection
-      @connection ||= Faraday.new(url: ENV.fetch("METRICS_API_ENDPOINT"))
+      base_url = ENV.fetch("METRICS_API_ENDPOINT").chomp("/")
+      if @connection && @connection.url_prefix.to_s.chomp("/") == base_url
+        @connection
+      else
+        @connection = Faraday.new(url: base_url)
+      end
     end
 
     class << self
