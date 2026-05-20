@@ -15,7 +15,7 @@ describe Performance::Metrics::MetricsApiPublisher do
       {
         "metric_name" => "monthly-rolling-window-total-active-users",
         "users" => 116,
-        "run_time" => "2026-05-20"
+        "run_time" => "2026-05-20",
       }
     end
 
@@ -23,7 +23,7 @@ describe Performance::Metrics::MetricsApiPublisher do
       {
         "name" => "monthly-rolling-window-total-active-users",
         "value" => "116",
-        "datetime" => "2026-05-20T00:00:00Z"
+        "datetime" => "2026-05-20T00:00:00Z",
       }
     end
 
@@ -55,7 +55,7 @@ describe Performance::Metrics::MetricsApiPublisher do
       symbol_stats = {
         metric_name: "monthly-rolling-window-total-active-users",
         users: 116,
-        run_time: "2026-05-20"
+        run_time: "2026-05-20",
       }
       stub = stub_request(:post, expected_url).with(body: expected_payload.to_json)
 
@@ -68,12 +68,12 @@ describe Performance::Metrics::MetricsApiPublisher do
       stats_with_z = {
         "metric_name" => "monthly-rolling-window-total-active-users",
         "users" => 116,
-        "run_time" => "2026-05-20Z"
+        "run_time" => "2026-05-20Z",
       }
       expected_payload_with_z = {
         "name" => "monthly-rolling-window-total-active-users",
         "value" => "116",
-        "datetime" => "2026-05-20Z"
+        "datetime" => "2026-05-20Z",
       }
       stub = stub_request(:post, expected_url).with(body: expected_payload_with_z.to_json)
 
@@ -85,12 +85,12 @@ describe Performance::Metrics::MetricsApiPublisher do
     it "handles missing/nil run_time gracefully" do
       stats_without_runtime = {
         "metric_name" => "monthly-rolling-window-total-active-users",
-        "users" => 116
+        "users" => 116,
       }
       expected_payload_without_runtime = {
         "name" => "monthly-rolling-window-total-active-users",
         "value" => "116",
-        "datetime" => nil
+        "datetime" => nil,
       }
       stub = stub_request(:post, expected_url).with(body: expected_payload_without_runtime.to_json)
 

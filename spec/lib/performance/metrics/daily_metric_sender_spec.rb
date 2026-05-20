@@ -117,7 +117,7 @@ describe Performance::Metrics::DailyMetricSender do
     {
       "name" => "monthly-rolling-window-total-active-users",
       "value" => "0",
-      "datetime" => "#{today}T00:00:00Z"
+      "datetime" => "#{today}T00:00:00Z",
     }
   end
 

@@ -22,7 +22,7 @@ module Performance::Metrics
       payload = {
         "name" => stringified_stats["metric_name"],
         "value" => stringified_stats["users"]&.to_s,
-        "datetime" => datetime_val
+        "datetime" => datetime_val,
       }
 
       connection.post("v1/record") do |req|
