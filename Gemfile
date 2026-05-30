@@ -1,8 +1,9 @@
-source "http://rubygems.org"
+source "https://rubygems.org"
 ruby File.read(".ruby-version").chomp
 
 gem "aws-sdk-s3"
 gem "faraday"
+gem "mutex_m"
 gem "opensearch-ruby"
 gem "puma"
 gem "rake"
