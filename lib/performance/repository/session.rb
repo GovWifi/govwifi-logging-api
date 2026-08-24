@@ -67,5 +67,81 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
             ) AS user_devices"
       READ_REPLICA_DB.fetch(sql).first
     end
+
+    def month_to_date_total_roaming_users
+      sql = "SELECT
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
+              COUNT(*) AS active_count
+            FROM
+              (SELECT
+                username,
+                COUNT(DISTINCT location_id) AS roaming_count
+              FROM
+                sessions s
+              INNER JOIN ip_locations il ON s.siteIP = il.ip
+              WHERE
+                s.success = 1
+              AND
+                start >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+              GROUP BY
+                username
+              HAVING
+                roaming_count > 1)
+            AS active_count"
+
+      READ_REPLICA_DB.fetch(sql).first
+    end
+
+    def monthly_rolling_window_total_roaming_users
+      sql = "SELECT
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
+              COUNT(*) AS rolling_total_roaming
+            FROM
+              (SELECT
+                username,
+                COUNT(DISTINCT location_id) AS roaming_count
+              FROM
+                sessions s
+              INNER JOIN ip_locations il ON s.siteIP = il.ip
+              WHERE
+                s.success = 1
+              AND
+                start >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
+              GROUP BY
+                username
+              HAVING
+                roaming_count > 1)
+            AS rolling_total_roaming"
+
+      READ_REPLICA_DB.fetch(sql).first
+    end
+
+    def month_to_date_total_active_users
+      sql = "SELECT
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
+              COUNT(DISTINCT username) AS total
+            FROM
+              sessions
+            WHERE
+              start BETWEEN DATE_FORMAT(CURRENT_DATE, '%Y-%m-01') AND CURRENT_DATE
+            AND
+              success = 1"
+
+      READ_REPLICA_DB.fetch(sql).first
+    end
+
+    def monthly_rolling_window_total_active_users
+      sql = "SELECT
+              DATE_FORMAT(CURRENT_DATE, '%Y-%m-%d') AS run_time,
+              COUNT(DISTINCT username) AS total
+            FROM
+              sessions
+            WHERE
+              start BETWEEN CURRENT_DATE - INTERVAL 31 DAY AND CURRENT_DATE - INTERVAL 1 DAY
+            AND
+              success = 1"
+
+      READ_REPLICA_DB.fetch(sql).first
+    end
   end
 end
