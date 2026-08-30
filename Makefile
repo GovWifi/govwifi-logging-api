@@ -4,7 +4,7 @@ DOCKER_COMPOSE = docker compose -f docker-compose.yml
 BUNDLE_FLAGS=
 
 ifdef DEPLOYMENT
-	BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --without test, vscodedev'
+	BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --without test'
 endif
 
 DOCKER_BUILD_CMD = $(DOCKER_COMPOSE) build $(BUNDLE_FLAGS)
@@ -24,7 +24,7 @@ help:
 	@echo "  help               Show this help message"
 	@echo ""
 	@echo "Environment:"
-	@echo "  DEPLOYMENT=1       Build without the test/vscodedev gems (deployment image)"
+	@echo "  DEPLOYMENT=1       Build without the test gems (deployment image)"
 	@echo ""
 	@echo "Usage: make [target]"
 	@echo ""
