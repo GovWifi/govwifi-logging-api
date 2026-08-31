@@ -1,5 +1,5 @@
 DOCKER_COMPOSE = docker compose -f docker-compose.yml
-BUNDLE_FLAGS=
+BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --jobs 1 --retry 5'
 
 ifdef DEPLOYMENT
 	BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --without test'
@@ -44,11 +44,12 @@ serve: build
 	$(DOCKER_COMPOSE) up -d app
 
 shell: serve
-	$(DOCKER_COMPOSE) exec app bash
+	$(DOCKER_COMPOSE) exec app ash
 
 test: build
 	$(DOCKER_COMPOSE) run --rm app /usr/src/app/create_user_details.sh
 	$(DOCKER_COMPOSE) run --rm app bundle exec rspec --format documentation
+	$(MAKE) stop
 
 lint: build
-	$(DOCKER_COMPOSE) run --no-deps --rm app bundle exec rubocop
+	$(DOCKER_COMPOSE) run --no-deps --rm --entrypoint "" app bundle exec rubocop
