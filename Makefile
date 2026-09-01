@@ -2,7 +2,7 @@ DOCKER_COMPOSE = docker compose -f docker-compose.yml
 BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --jobs 1 --retry 5'
 
 ifdef DEPLOYMENT
-	BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --without test'
+	BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --jobs 1 --retry 5 --without test --without development'
 endif
 
 DOCKER_BUILD_CMD = $(DOCKER_COMPOSE) build $(BUNDLE_FLAGS)
@@ -23,7 +23,7 @@ help:
 	@echo "  help               Show this help message"
 	@echo ""
 	@echo "Environment:"
-	@echo "  DEPLOYMENT=1       Build without the test gems (deployment image)"
+	@echo "  DEPLOYMENT=1       Build without the test and development gems (deployment image)"
 	@echo ""
 	@echo "Usage: make [target]"
 	@echo ""

@@ -26,3 +26,5 @@ group :test do
   gem "timecop"
   gem "webmock"
 end
+
+gem "solargraph", "~> 0.58.3", group: :development, require: false
