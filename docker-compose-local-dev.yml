@@ -1,5 +1,3 @@
-# Use to run the dependencies needed by a locally installed logging API.
-# The API will be run by the developer outside of docker compose.
 services:
   user_and_session_db:
     image: mysql:8.4

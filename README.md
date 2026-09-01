@@ -1,221 +1,221 @@
 # GovWifi Logging API
 
-The GovWifi frontend uses this API to record each authentication request. It is stored in a database and this data is used for reporting and debugging.
+The GovWifi frontend uses this API to record each FreeRADIUS authentication request.
+Records are stored in a database and used for reporting and debugging.
 
-N.B. The private GovWifi [build repository][build-repo] contains instructions on how to build GovWifi end-to-end - the sites, services and infrastructure.
+> N.B.
+>
+> The private GovWifi [build repository][build-repo] contains instructions on 
+> how to build GovWifi end-to-end; the sites, services and infrastructure.
 
 ## Table of Contents
 
-- [GovWifi Logging API](#govwifi-logging-api)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-    - [Sinatra routes](#sinatra-routes)
-  - [Statistics sent over to the performance platform](#statistics-sent-over-to-the-performance-platform)
-    - [Send statistics manually](#send-statistics-manually)
-      - [Weekly Statistics](#weekly-statistics)
-      - [Monthly Statistics](#monthly-statistics)
-  - [Developing](#developing)
-    - [Deploying changes](#deploying-changes)
-  - [How to contribute](#how-to-contribute)
-  - [Licence](#licence)
+- [Overview](#overview)
+  - [Sinatra routes](#sinatra-routes)
+  - [Stored data](#stored-data)
+- [Statistics sent to the performance platform](#statistics-sent-to-the-performance-platform)
+  - [Send statistics manually](#send-statistics-manually)
+    - [Daily statistics](#daily-statistics)
+    - [Weekly statistics](#weekly-statistics)
+    - [Monthly statistics](#monthly-statistics)
+- [Developing](#developing)
+  - [Makefile targets](#makefile-targets)
+  - [Running the API locally](#running-the-api-locally)
+  - [Sample POST parameters](#sample-post-parameters)
+- [Deploying](#deploying)
+- [How to contribute](#how-to-contribute)
+- [Licence](#licence)
 
 ## Overview
 
-Also known as `post-auth` in FreeRadius terms, this logs to the sessions table when a user has authenticated successfully or unsuccessfully.
+During the FreeRADIUS `post-auth` phase a POST request is sent to this API 
+containing a session payload, received at the following endpoint:
 
-During the RADIUS `post-auth` action, a POST request is sent to this API containing session data. This API receives this request and saves it to a database.
+```ruby
+/logging/post-auth
+```
 
-This application is also responsible for sending statistics to the Performance Platform.
+The API receives this payload and saves it to a `sessions` table in its database.
 
-It stores the following details along with this:
-
-- username
-- MAC
-- Called station ID (Building Identifier)
-- Site IP Address
-
-This is useful for debugging and populating last_login of the user.
+The application is also responsible for sending usage statistics to the Performance Platform.
 
 ### Sinatra routes
 
-- `GET /healthcheck` - AWS ELB target group health checking
-- `POST /logging/post-auth` - Persist a session record with these details:
+- `GET /` — returns `{"status": "ok"}`; used by the Kubernetes health check
+- `GET /healthcheck` — returns `Healthy`; used by the AWS ELB target group
+- `POST /logging/post-auth` — persists a session record
 
-```shell
-params:
-  :username
-  :mac
-  :called_station_id
-  :site_ip_address
-  :authentication_result
-```
+#### Stored data
 
-## Statistics sent over to the performance platform
+Each record stores:
 
-- Account Usage
-- Unique Users
+- username
+- MAC address
+- Called station ID (building identifier)
+- Site IP address
+- Authentication result (success / failure)
+- Task ID and authentication reply
+- EAP type (connection type)
+
+For certificate-based (EAP-TLS) sessions it also stores the certificate details 
+(name, serial, issuer and subject).
+
+## Statistics sent to the Performance Platform
+
+The API publishes usage statistics to the Performance Platform, both to an S3 
+bucket and to Elasticsearch. Available metrics include active users, completion 
+rate, new / inactive users, roaming users, user devices and volumetrics.
+
+Statistics are generated for three periods: `daily`, `weekly` and `monthly`.
 
 ### Send statistics manually
 
-You can trigger statistics to be sent manually by running the command
-below locally.
+You can trigger statistics to be sent manually by running a Rake task. 
+Populate the date argument with the date you want the statistics for.
 
-Populate the date argument to the Rake task with the date that you
-want to send the statistics for.
-
-#### Weekly Statistics
+#### Daily statistics
 
 ```shell
 aws ecs run-task --cluster wifi-api-cluster \
   --task-definition logging-api-scheduled-task-wifi --count 1 --region eu-west-2 \
   --launch-type FARGATE --platform-version 1.3.0 \
-  --network-configuration '{ "awsvpcConfiguration": { "assignPublicIp": "ENABLED", "subnets": ["subnet-XXXXXXXX","subnet-XXXXXXXX","subnet-XXXXXXXXXXXXXXXX"], "securityGroups": ["sg-XXXXXXXX","sg-XXXXXXXX","sg-XXXXXXXX"]}}' \
+  --network-configuration '{ "awsvpcConfiguration": { "assignPublicIp": "ENABLED", "subnets": ["subnet-XXXXXXXX","subnet-XXXXXXXX","subnet-XXXXXXXXXXXXXXXX"], "securityGroups": ["sg-XXXXXXXX","sg-XXXXXXXX"]}}' \
+  --overrides '{ "containerOverrides": [{ "name": "logging", "command": ["bundle", "exec", "rake", "publish_daily_metrics[2018-12-01]"] }] }'
+```
+
+#### Weekly statistics
+
+```shell
+aws ecs run-task --cluster wifi-api-cluster \
+  --task-definition logging-api-scheduled-task-wifi --count 1 --region eu-west-2 \
+  --launch-type FARGATE --platform-version 1.3.0 \
+  --network-configuration '{ "awsvpcConfiguration": { "assignPublicIp": "ENABLED", "subnets": ["subnet-XXXXXXXX","subnet-XXXXXXXX","subnet-XXXXXXXXXXXXXXXX"], "securityGroups": ["sg-XXXXXXXX","sg-XXXXXXXX"]}}' \
   --overrides '{ "containerOverrides": [{ "name": "logging", "command": ["bundle", "exec", "rake", "publish_weekly_metrics[2018-12-01]"] }] }'
 ```
 
-#### Monthly Statistics
+#### Monthly statistics
 
 ```shell
 aws ecs run-task --cluster wifi-api-cluster \
   --task-definition logging-api-scheduled-task-wifi --count 1 --region eu-west-2 \
   --launch-type FARGATE --platform-version 1.3.0 \
-  --network-configuration '{ "awsvpcConfiguration": { "assignPublicIp": "ENABLED", "subnets": ["subnet-XXXXXXXX","subnet-XXXXXXXX","subnet-XXXXXXXXXXXXXXXX"], "securityGroups": ["sg-XXXXXXXX","sg-XXXXXXXX","sg-XXXXXXXX"]}}' \
+  --network-configuration '{ "awsvpcConfiguration": { "assignPublicIp": "ENABLED", "subnets": ["subnet-XXXXXXXX","subnet-XXXXXXXX","subnet-XXXXXXXXXXXXXXXX"], "securityGroups": ["sg-XXXXXXXX","sg-XXXXXXXX"]}}' \
   --overrides '{ "containerOverrides": [{ "name": "logging", "command": ["bundle", "exec", "rake", "publish_monthly_metrics[2018-12-01]"] }] }'
 ```
 
 ## Developing
 
-The [Makefile](Makefile) contains commonly used commands for working with this app:
+The application has been fully containerised using Docker, and further abstracted 
+by a set of [Makefile](Makefile) targets for commonly used tasks.
 
-- `make test` runs all the automated tests.
-- `make serve` starts the API server on localhost.
-- `make lint` runs the gov-uk linter.
+> Run `make` without a target to show its usage.
 
-### Running API outside docker
+### Makefile targets
 
-This runs directly on the MacOS host. Its a quicker feedback loop than running
-the API in Docker. This is how to get the API running using Homebrew. The
-tool [Direnv](https://direnv.net/) was used to manage the environment the API
-runs in.
+| Target | Description |
+| --- | --- |
+| `make build` | Build the Docker image |
+| `make serve` | Build and start the API server (detached) |
+| `make shell` | Build, start services and open a shell in the app |
+| `make test` | Build, create test data and run the test suite |
+| `make lint` | Run the linter (RuboCop) |
+| `make stop` | Stop and remove all containers and volumes |
+| `make help` | Show this help message |
 
-Install Dependancies
+### Running the API locally
 
-```bash
+You can also serve the logging API directly on your host machine, this will help
+to reduce the feedback loop even further.
 
-brew install mysql
+The instructions below run the *API* directly on your host machine whilst using 
+containers to provision the databases.
 
-brew install openssl@3
+Start the database services (detached):
 
-# include development dependancies
-bundle config set with 'test'
-
-# Work around issue install ruby mysql2 gem on homebrew
-#
-#1 warning generated.
-#compiling statement.c
-#linking shared-object mysql2/mysql2.bundle
-#ld: library 'zstd' not found
-#clang: error: linker command failed with exit code 1 (use -v to see invocation)
-#
-# This may not still be an issue. It is kept for future reference.
-#
-gem install mysql2 -v '0.5.6' -- --with-opt-dir=$(brew --prefix openssl) --with-ldflags=-L/opt/homebrew/opt/zstd/lib
-
-bundle install
-
+```shell
+docker compose -f docker-compose-local-dev.yml up -d
 ```
 
-API Configuration
+This exposes the databse on `127.0.0.1:53306` (root password `password`).
 
-Create the `.envrc` inside the checkout root. For example my file looked like:
+Next, create the databases and load the user schema:
 
-```bash
-export GEM_HOME=./.gems
-export PATH=$GEM_HOME/bin:$PATH
+```shell
+mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "CREATE DATABASE userdb"
+mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "CREATE DATABASE sessiondb"
+mysql -uroot -ppassword -h127.0.0.1 -P53306 -D userdb < mysql_user/schema.sql
+```
 
-export DB_NAME='sessiondb'
-export DB_PASS='password'
-export DB_USER='root'
+Set the environment variables and run the API:
+
+```shell
+export DB_NAME=sessiondb
+export DB_PASS=password
+export DB_USER=root
 export DB_PORT=53306
-export DB_HOSTNAME='0.0.0.0'
-export DB_READ_REPLICA_HOSTNAME='0.0.0.0'
-export USER_DB_NAME='userdb'
-export USER_DB_PASS='password'
-export USER_DB_USER='root'
+export DB_HOSTNAME=127.0.0.1
+export DB_READ_REPLICA_HOSTNAME=127.0.0.1
+export USER_DB_NAME=userdb
+export USER_DB_PASS=password
+export USER_DB_USER=root
 export USER_DB_PORT=53306
-export USER_DB_HOSTNAME='0.0.0.0'
+export USER_DB_HOSTNAME=127.0.0.1
 
-```
-
-Running API
-
-```bash
-
-# In one terminal run the dependancies needed by the Logging API:
-docker compose -f docker-compose-local-dev.yml down --remove-orphans ; docker compose -f docker-compose-local-dev.yml up
-
-# In another terminal create the databases needed for local dev in the mysql
-mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "create database sessiondb"
-mysql -uroot -ppassword -h127.0.0.1 -P53306 -e "create database userdb"
-mysql -uroot -ppassword -h127.0.0.1 -P53306 userdb < mysql_user/schema.sql
-
-# Run the db migrations
 bundle exec rake db:migrate
-
-# Run the logging api
 bundle exec puma -p 8080
-
 ```
 
-Example logging POST
+### Sample POST parameters
 
-Create a file called `logging-api-post.json` and add the content:
+Create a file called `logging-api-post.json` with the following content:
 
 ```json
 {
-    "username": "test@client.org",
-    "mac": "02-00-00-00-00-01",
-    "called_station_id": "",
-    "site_ip_address": "35.178.48.11",
-    "cert_name": "Client",
-    "authentication_result": "Access-Accept",
-    "authentication_reply": "",
-    "task_id": "902ad495ccf042d3867fba1dcabcfcb9",
-    "cert_serial": "192550388a309ecf982ad7fdc0b24f13b4a1ef20",
-    "cert_subject": "/CN=Client",
-    "cert_issuer": "/CN=Smoke Test Intermediate CA",
-    "eap_type": "TLS"
+  "username": "test@client.org",
+  "mac": "02-00-00-00-00-01",
+  "called_station_id": "",
+  "site_ip_address": "35.178.48.11",
+  "authentication_result": "Access-Accept",
+  "authentication_reply": "",
+  "task_id": "902ad495ccf042d3867fba1dcabcfcb9",
+  "cert_name": "Client",
+  "cert_serial": "192550388a309ecf982ad7fdc0b24f13b4a1ef20",
+  "cert_subject": "/CN=Client",
+  "cert_issuer": "/CN=Smoke Test Intermediate CA",
+  "eap_type": "TLS"
 }
 ```
 
-Now using cURL command you can send this to a running API instance. For example
+Send this payload to your locally running API instance:
 
-```bash
-
-curl -d@logging-api-post.json http://0.0.0.0:8080/logging/post-auth
-
+```shell
+curl -d@logging-api-post.json http://127.0.0.1:8080/logging/post-auth
 ```
 
-Running linter checks
+> N.B.
+>
+> You can drop into the running databases to observe this action being persisted
+> to the database.
 
-```bash
-
-bundle exec robucop
-
+```shell
+docker compose -f docker-compose-local-dev.yml exec user_and_session_db bash
+mysql -uroot -ppassword -h127.0.0.1 -P3306 -D sessiondb -e "SELECT * from sessions"
 ```
 
-### Deploying changes
+## Deploying
 
-Merging to `master` will automatically deploy this API to Dev and Staging via the Pipeline
-[You can find in depth instructions on using our deploy process here](https://docs.google.com/document/d/1ORrF2HwrqUu3tPswSlB0Duvbi3YHzvESwOqEY9-w6IQ/) (you must be member of the GovWifi Team to access this document).
+Merging to `master` automatically deploys this API to Dev and Staging via the pipeline.
+
+[You can find in-depth instructions on our deploy process here][deploy-guide] 
+(You must be a member of the GovWifi Team to access this resource).
 
 ## How to contribute
 
 1. Fork the project
 2. Create a feature or fix branch
-3. Make your changes (with tests if possible)
-4. Run and linter: `make lint`
-5. Run and pass tests `make test`
+3. Make your changes (add tests)
+4. Run the linter `make lint` (resolve issues)
+5. Run the test suite `make test` (resolve issues)
 6. Raise a pull request
 
 ## Licence
@@ -224,3 +224,4 @@ This codebase is released under [the MIT License][mit].
 
 [mit]: LICENCE
 [build-repo]: https://github.com/GovWifi/govwifi-build
+[deploy-guide]: https://docs.google.com/document/d/1ORrF2HwrqUu3tPswSlB0Duvbi3YHzvESwOqEY9-w6IQ/
