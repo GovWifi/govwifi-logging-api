@@ -136,7 +136,7 @@ Start the database services (detached):
 docker compose -f docker-compose-local-dev.yml up -d
 ```
 
-This exposes the databse on `127.0.0.1:53306` (root password `password`).
+This exposes the database on `127.0.0.1:53306` (root password `password`).
 
 Next, create the databases and load the user schema:
 
@@ -204,10 +204,11 @@ mysql -uroot -ppassword -h127.0.0.1 -P3306 -D sessiondb -e "SELECT * from sessio
 
 ## Deploying
 
-Merging to `master` automatically deploys this API to Dev and Staging via the pipeline.
+You can find in-depth instructions on using our deploy process [here][deploy-guide].
 
-[You can find in-depth instructions on our deploy process here][deploy-guide] 
-(You must be a member of the GovWifi Team to access this resource).
+> N.B.
+>
+> You must be member of the GovWifi Team to access this document.
 
 ## How to contribute
 
@@ -224,4 +225,4 @@ This codebase is released under [the MIT License][mit].
 
 [mit]: LICENCE
 [build-repo]: https://github.com/GovWifi/govwifi-build
-[deploy-guide]: https://docs.google.com/document/d/1ORrF2HwrqUu3tPswSlB0Duvbi3YHzvESwOqEY9-w6IQ/
+[deploy-guide]: https://docs.google.com/document/d/1ORrF2HwrqUu3tPswSlB0Duvbi3YHzvESwOqEY9-w6IQ
