@@ -1,5 +1,5 @@
 require "logger"
-require "./lib/performance/metrics"
+require_relative "../lib/performance/metrics"
 logger = Logger.new($stdout)
 
 task :publish_daily_total_metrics, [:date] => %i[load_env synchronize_ip_locations] do |_, args|
