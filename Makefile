@@ -1,8 +1,6 @@
 DOCKER_COMPOSE = docker compose -f docker-compose.yml
-BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --jobs 1 --retry 5'
-
 ifdef DEPLOYMENT
-	BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --jobs 1 --retry 5 --without test --without development'
+	BUNDLE_FLAGS = --build-arg BUNDLE_WITHOUT='development test'
 endif
 
 DOCKER_BUILD_CMD = $(DOCKER_COMPOSE) build $(BUNDLE_FLAGS)
