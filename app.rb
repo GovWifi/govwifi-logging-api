@@ -9,7 +9,7 @@ require "sinatra/json"
 # before the request times out
 DB_CONNECTION_TIMEOUT = 10
 
-require "./lib/loader"
+require_relative "./lib/loader"
 
 class App < Sinatra::Base
   use Raven::Rack if defined? Raven

@@ -1,9 +1,10 @@
 source "https://rubygems.org"
-ruby File.read(".ruby-version").chomp
+ruby File.read(".ruby-version").strip
 
 gem "aws-sdk-s3"
 gem "faraday"
 gem "mutex_m"
+gem "mysql2", "~> 0.5.7"
 gem "opensearch-ruby"
 gem "puma"
 gem "rake"
@@ -18,7 +19,6 @@ gem "sinatra-contrib"
 group :test do
   gem "factory_bot"
   gem "faker"
-  gem "mysql2", "~> 0.5.7"
   gem "rack-test"
   gem "rspec"
   gem "rubocop-govuk"
@@ -26,3 +26,5 @@ group :test do
   gem "timecop"
   gem "webmock"
 end
+
+gem "solargraph", "~> 0.58.3", group: :development, require: false
