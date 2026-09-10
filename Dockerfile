@@ -8,9 +8,8 @@ WORKDIR /usr/src/app
 
 COPY Gemfile Gemfile.lock .ruby-version ./
 
-RUN if [ "${BUNDLE_WITHOUT}" = "development test" ]; then \
-        mkdir -p /root/.bundle && \
-        echo 'BUNDLE_WITHOUT: development:test' > /root/.bundle/config; \
+RUN if [ -n "${BUNDLE_WITHOUT}" ]; then \
+        bundle config set without "${BUNDLE_WITHOUT}"; \
       fi && \
     apk --no-cache add --virtual .build-deps build-base && \
     apk --no-cache add mysql-dev && \
