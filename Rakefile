@@ -4,15 +4,15 @@ task :load_env do
   # through the rake tasks may take several hours to complete
   ::DB_CONNECTION_TIMEOUT = 12 * 60 * 60
 
-  require "./lib/loader"
+  require_relative "./lib/loader"
 end
 
-require "./tasks/migrate"
-require "./tasks/publish_statistics"
-require "./tasks/send_request_statistics"
-require "./tasks/session_deletion"
-require "./tasks/smoke_tests_clean"
-require "./tasks/sync_s3_volumetrics"
-require "./tasks/sync_s3_to_data_bucket"
-require "./tasks/update_last_login"
-require "./tasks/recover_active_users"
+require_relative "./tasks/migrate"
+require_relative "./tasks/publish_statistics"
+require_relative "./tasks/send_request_statistics"
+require_relative "./tasks/session_deletion"
+require_relative "./tasks/smoke_tests_clean"
+require_relative "./tasks/sync_s3_volumetrics"
+require_relative "./tasks/sync_s3_to_data_bucket"
+require_relative "./tasks/update_last_login"
+require_relative "./tasks/recover_active_users"
