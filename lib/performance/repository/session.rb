@@ -143,5 +143,37 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
 
       READ_REPLICA_DB.fetch(sql).first
     end
+
+    def month_to_date_active_tls_users(date: Date.today)
+      sql = "SELECT
+              DATE_FORMAT('#{date}', '%Y-%m-%d') AS run_time,
+              COUNT(DISTINCT cert_serial, cert_issuer) AS total
+            FROM
+              sessions
+            WHERE
+              username IS NULL
+            AND
+              start BETWEEN DATE_FORMAT('#{date}', '%Y-%m-01') AND '#{date}'
+            AND
+              success = 1"
+
+      READ_REPLICA_DB.fetch(sql).first
+    end
+
+    def monthly_rolling_window_active_tls_users(date: Date.today)
+      sql = "SELECT
+              DATE_FORMAT('#{date}', '%Y-%m-%d') AS run_time,
+              COUNT(DISTINCT cert_serial, cert_issuer) AS total
+            FROM
+              sessions
+            WHERE
+              username IS NULL
+            AND
+              start BETWEEN '#{date}' - INTERVAL 31 DAY AND '#{date}' - INTERVAL 1 DAY
+            AND
+              success = 1"
+
+      READ_REPLICA_DB.fetch(sql).first
+    end
   end
 end
