@@ -1,5 +1,5 @@
 require "logger"
-require "./lib/performance/metrics"
+require_relative "../lib/performance/metrics"
 logger = Logger.new($stdout)
 
 task synchronize_ip_locations: :load_env do

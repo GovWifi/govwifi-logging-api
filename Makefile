@@ -1,40 +1,53 @@
-BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --jobs 1 --retry 5'
 DOCKER_COMPOSE = docker compose -f docker-compose.yml
-
 ifdef DEPLOYMENT
-	BUNDLE_FLAGS = --build-arg BUNDLE_INSTALL_CMD='bundle install --without test, vscodedev'
+	BUNDLE_FLAGS = --build-arg BUNDLE_WITHOUT='development test'
 endif
 
 DOCKER_BUILD_CMD = $(DOCKER_COMPOSE) build $(BUNDLE_FLAGS)
 
-build: stop
-	$(DOCKER_BUILD_CMD)
+.DEFAULT_GOAL := help
 
-prebuild:
+.PHONY: help build serve lint test stop shell
+
+help:
+	@echo "Available targets:"
+	@echo ""
+	@echo "  stop               Stop and remove all containers and volumes"
+	@echo "  build              Build the Docker image"
+	@echo "  serve              Build and start the API server (detached)"
+	@echo "  shell              Build, start services, and open a shell in the app"
+	@echo "  test               Build, create test data, and run the test suite"
+	@echo "  lint               Run the linter (rubocop)"
+	@echo "  help               Show this help message"
+	@echo ""
+	@echo "Environment:"
+	@echo "  DEPLOYMENT=1       Build without the test and development gems (deployment image)"
+	@echo ""
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make test          Run tests"
+	@echo "  make lint          Run linters"
+	@echo "  make serve         Start the development server"
+	@echo "  make stop          Stop all containers"
+	@echo ""
+
+stop:
+	$(DOCKER_COMPOSE) down -v
+
+build:
 	$(DOCKER_BUILD_CMD)
-	$(DOCKER_COMPOSE) up --no-start
 
 serve: build
 	$(DOCKER_COMPOSE) up -d app
 
-lint: build
-	$(DOCKER_COMPOSE) run --no-deps --rm app bundle exec rubocop
+shell: serve
+	$(DOCKER_COMPOSE) exec app ash
 
-test: serve
+test: build
 	$(DOCKER_COMPOSE) run --rm app /usr/src/app/create_user_details.sh
-	$(DOCKER_COMPOSE) run --rm app rspec
+	$(DOCKER_COMPOSE) run --rm app bundle exec rspec --format documentation
 	$(MAKE) stop
 
-stop:
-	$(DOCKER_COMPOSE) down
-	$(DOCKER_COMPOSE) kill
-	$(DOCKER_COMPOSE) rm -f
-
-shell: serve
-	docker exec -it `docker-compose ps -q app | awk 'END{print}'` ash
-
-update: stop
-	bundle lock --update
-	$(MAKE) test
-
-.PHONY: build test serve stop lint shell
+lint: build
+	$(DOCKER_COMPOSE) run --no-deps --rm --entrypoint "" app bundle exec rubocop

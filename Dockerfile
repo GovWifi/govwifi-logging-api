@@ -7,20 +7,20 @@ ENV MARIADB_TLS_DISABLE_PEER_VERIFICATION=1
 
 WORKDIR /usr/src/app
 
-
 COPY Gemfile Gemfile.lock .ruby-version ./
 
-
-RUN apk --no-cache add --virtual .build-deps build-base && \
+RUN if [ -n "${BUNDLE_WITHOUT}" ]; then \
+        bundle config set without "${BUNDLE_WITHOUT}"; \
+      fi && \
+    apk --no-cache add --virtual .build-deps build-base && \
     apk --no-cache add mysql-dev && \
-    ${BUNDLE_INSTALL_CMD} && \
+    bundle install --jobs 1 --retry 5 && \
     apk del .build-deps
 
 COPY . .
 
-
 COPY entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
 
+ENTRYPOINT ["entrypoint.sh"]
 CMD ["bundle", "exec", "puma", "-p", "8080", "--quiet", "--threads", "8:32"]
