@@ -99,11 +99,11 @@ describe Performance::Metrics::MetricsApiPublisher do
       expect(stub).to have_been_requested.once
     end
 
-    it "handles stats using count and date keys" do
+    it "handles stats using count key" do
       count_stats = {
         "metric_name" => "service-report-active-tls-user-rolling-count",
         "count" => 47_073,
-        "date" => "2026-07-17",
+        "run_time" => "2026-07-17",
       }
       expected_count_payload = {
         "name" => "service-report-active-tls-user-rolling-count",

@@ -10,7 +10,7 @@ module Performance::Metrics
       return unless stats
 
       stringified_stats = stats.transform_keys(&:to_s)
-      datetime_val = stringified_stats["run_time"] || stringified_stats["date"]
+      datetime_val = stringified_stats["run_time"]
       if datetime_val
         if datetime_val.match?(/\A\d{4}-\d{2}-\d{2}\z/)
           datetime_val = "#{datetime_val}T00:00:00Z"

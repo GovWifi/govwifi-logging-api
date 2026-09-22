@@ -18,6 +18,7 @@ describe Performance::Metrics::TlsMetricSender do
   let(:monthly_rolling_expected_hash) do
     {
       "count" => 0,
+      "run_time" => today.to_s,
       "metric_name" => "service-report-active-tls-user-rolling-count",
       "period" => "day",
       "date" => today.to_s,
@@ -27,6 +28,7 @@ describe Performance::Metrics::TlsMetricSender do
   let(:month_to_date_expected_hash) do
     {
       "count" => 0,
+      "run_time" => today.to_s,
       "metric_name" => "service-report-active-tls-user-mtd-count",
       "period" => "day",
       "date" => today.to_s,

@@ -11,6 +11,7 @@ class Performance::UseCase::MonthToDateActiveTlsUsers
 
     {
       count: result[:total] || 0,
+      run_time: result[:run_time],
       metric_name: "service-report-active-tls-user-mtd-count",
       period:,
       date: date.to_s,

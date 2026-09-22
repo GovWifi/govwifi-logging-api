@@ -35,6 +35,7 @@ describe Performance::UseCase::MonthlyRollingWindowActiveTlsUsers do
     it "counts both distinct TLS users" do
       expect(result).to eq(
         count: 2,
+        run_time: today.to_s,
         metric_name: "service-report-active-tls-user-rolling-count",
         period: "day",
         date: today.to_s,
@@ -149,6 +150,7 @@ describe Performance::UseCase::MonthlyRollingWindowActiveTlsUsers do
     it "returns 0" do
       expect(result).to eq(
         count: 0,
+        run_time: today.to_s,
         metric_name: "service-report-active-tls-user-rolling-count",
         period: "day",
         date: today.to_s,
