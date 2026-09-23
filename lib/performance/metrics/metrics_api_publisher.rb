@@ -19,9 +19,11 @@ module Performance::Metrics
         end
       end
 
+      value_val = (stringified_stats["value"] || stringified_stats["count"] || stringified_stats["users"])&.to_s
+
       payload = {
         "name" => stringified_stats["metric_name"],
-        "value" => stringified_stats["users"]&.to_s,
+        "value" => value_val,
         "datetime" => datetime_val,
       }
 

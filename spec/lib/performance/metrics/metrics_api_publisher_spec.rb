@@ -99,6 +99,24 @@ describe Performance::Metrics::MetricsApiPublisher do
       expect(stub).to have_been_requested.once
     end
 
+    it "handles stats using count key" do
+      count_stats = {
+        "metric_name" => "service-report-active-tls-user-rolling-count",
+        "count" => 47_073,
+        "run_time" => "2026-07-17",
+      }
+      expected_count_payload = {
+        "name" => "service-report-active-tls-user-rolling-count",
+        "value" => "47073",
+        "datetime" => "2026-07-17T00:00:00Z",
+      }
+      stub = stub_request(:post, expected_url).with(body: expected_count_payload.to_json)
+
+      described_class.publish(count_stats)
+
+      expect(stub).to have_been_requested.once
+    end
+
     context "when the endpoint has a trailing slash" do
       let(:api_endpoint) { "https://metrics.development.wifi.service.gov.uk/" }
 
