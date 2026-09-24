@@ -117,6 +117,24 @@ describe Performance::Metrics::MetricsApiPublisher do
       expect(stub).to have_been_requested.once
     end
 
+    it "handles PEAP unique user stats using count key" do
+      count_stats = {
+        "metric_name" => "service-report-peap-unique-users-mtd-count",
+        "count" => 12_500,
+        "run_time" => "2026-05-19",
+      }
+      expected_count_payload = {
+        "name" => "service-report-peap-unique-users-mtd-count",
+        "value" => "12500",
+        "datetime" => "2026-05-19T00:00:00Z",
+      }
+      stub = stub_request(:post, expected_url).with(body: expected_count_payload.to_json)
+
+      described_class.publish(count_stats)
+
+      expect(stub).to have_been_requested.once
+    end
+
     context "when the endpoint has a trailing slash" do
       let(:api_endpoint) { "https://metrics.development.wifi.service.gov.uk/" }
 
