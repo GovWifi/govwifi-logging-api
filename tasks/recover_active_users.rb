@@ -16,4 +16,7 @@ task :publish_daily_total_metrics, [:date] => %i[load_env synchronize_ip_locatio
 
     logger.info("END: [#{metric_sender.key}] Done.")
   end
+
+  Rake::Task[:publish_active_tls_users].execute(args)
+  Rake::Task[:publish_peap_unique_users].execute(args)
 end
