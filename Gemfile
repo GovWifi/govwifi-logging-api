@@ -27,4 +27,4 @@ group :test do
   gem "webmock"
 end
 
-gem "solargraph", "~> 0.58.3", group: :development, require: false
+gem "solargraph", "~> 0.61.0", group: :development, require: false
