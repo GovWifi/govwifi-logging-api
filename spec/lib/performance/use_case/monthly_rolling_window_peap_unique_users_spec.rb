@@ -11,7 +11,7 @@ describe Performance::UseCase::MonthlyRollingWindowPeapUniqueUsers do
     sessions.truncate
   end
 
-  context "with PEAP users connecting once in the 30-day window" do
+  context "with PEAP users connecting once in the 30-day window and no TLS sessions" do
     before do
       sessions.insert(
         siteIP: "10.0.0.1",
@@ -61,7 +61,37 @@ describe Performance::UseCase::MonthlyRollingWindowPeapUniqueUsers do
     end
   end
 
-  context "with TLS sessions where username is null" do
+  context "with both active username sessions and TLS sessions in the rolling window" do
+    before do
+      sessions.insert(siteIP: "10.0.0.1", username: "USER01", start: today - 10, success: 1)
+      sessions.insert(siteIP: "10.0.0.2", username: "USER02", start: today - 5, success: 1)
+      sessions.insert(siteIP: "10.0.0.3", username: "USER03", start: today - 2, success: 1)
+      sessions.insert(siteIP: "10.0.0.4", username: "USER04", start: today - 1, success: 1)
+
+      sessions.insert(
+        siteIP: "10.0.0.5",
+        username: nil,
+        cert_serial: "SERIAL_A",
+        cert_issuer: "GovWifi CA",
+        start: today - 8,
+        success: 1,
+      )
+      sessions.insert(
+        siteIP: "10.0.0.6",
+        username: nil,
+        cert_serial: "SERIAL_A",
+        cert_issuer: "GovWifi CA",
+        start: today - 3,
+        success: 1,
+      )
+    end
+
+    it "subtracts unique TLS users from active users (4 active - 1 TLS = 3 PEAP)" do
+      expect(result[:count]).to eq(3)
+    end
+  end
+
+  context "with TLS sessions exceeding username sessions (e.g. only TLS sessions)" do
     before do
       sessions.insert(
         siteIP: "10.0.0.1",
@@ -73,12 +103,12 @@ describe Performance::UseCase::MonthlyRollingWindowPeapUniqueUsers do
       )
     end
 
-    it "ignores sessions with a null username" do
+    it "floors the count at 0 via GREATEST(..., 0)" do
       expect(result[:count]).to eq(0)
     end
   end
 
-  context "with failed PEAP authentication sessions" do
+  context "with failed authentication sessions" do
     before do
       sessions.insert(
         siteIP: "10.0.0.1",

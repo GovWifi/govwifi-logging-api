@@ -9,6 +9,51 @@ module Performance::Metrics
     def self.publish(stats)
       return unless stats
 
+      payload = build_payload(stats)
+
+      connection.post("v1/record") do |req|
+        req.headers["Authorization"] = "Bearer #{ENV.fetch('METRICS_API_BEARER_TOKEN')}"
+        req.headers["Content-Type"] = "application/json"
+        req.body = payload.to_json
+      end
+    rescue Faraday::Error => e
+      logger.warn("Metrics API request failed: #{e.message} (endpoint: #{ENV.fetch('METRICS_API_ENDPOINT', 'unknown')})")
+      nil
+    end
+
+    def self.update(stats)
+      return unless stats
+
+      payload = build_payload(stats)
+
+      connection.put("v1/record") do |req|
+        req.headers["Authorization"] = "Bearer #{ENV.fetch('METRICS_API_BEARER_TOKEN')}"
+        req.headers["Content-Type"] = "application/json"
+        req.body = payload.to_json
+      end
+    rescue Faraday::Error => e
+      logger.warn("Metrics API update request failed: #{e.message} (endpoint: #{ENV.fetch('METRICS_API_ENDPOINT', 'unknown')})")
+      nil
+    end
+
+    def self.fetch_export(year: Date.today.year)
+      response = connection.get("v1/data/export", { year: year }) do |req|
+        req.headers["Authorization"] = "Bearer #{ENV.fetch('METRICS_API_BEARER_TOKEN')}"
+      end
+
+      unless response&.success?
+        status = response ? response.status : "unknown"
+        logger.warn("Metrics API export failed (status: #{status}): #{response&.body}")
+        return nil
+      end
+
+      JSON.parse(response.body)
+    rescue Faraday::Error, JSON::ParserError => e
+      logger.warn("Metrics API export request failed: #{e.message} (endpoint: #{ENV.fetch('METRICS_API_ENDPOINT', 'unknown')})")
+      nil
+    end
+
+    def self.build_payload(stats)
       stringified_stats = stats.transform_keys(&:to_s)
       datetime_val = stringified_stats["run_time"]
       if datetime_val
@@ -21,21 +66,13 @@ module Performance::Metrics
 
       value_val = (stringified_stats["value"] || stringified_stats["count"] || stringified_stats["users"])&.to_s
 
-      payload = {
+      {
         "name" => stringified_stats["metric_name"],
         "value" => value_val,
         "datetime" => datetime_val,
       }
-
-      connection.post("v1/record") do |req|
-        req.headers["Authorization"] = "Bearer #{ENV.fetch('METRICS_API_BEARER_TOKEN')}"
-        req.headers["Content-Type"] = "application/json"
-        req.body = payload.to_json
-      end
-    rescue Faraday::Error => e
-      logger.warn("Metrics API request failed: #{e.message} (endpoint: #{ENV.fetch('METRICS_API_ENDPOINT', 'unknown')})")
-      nil
     end
+    private_class_method :build_payload
 
     def self.connection
       base_url = ENV.fetch("METRICS_API_ENDPOINT").chomp("/")

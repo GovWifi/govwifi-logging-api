@@ -11,7 +11,7 @@ describe Performance::UseCase::MonthToDatePeapUniqueUsers do
     sessions.truncate
   end
 
-  context "with PEAP users connecting once this month" do
+  context "with PEAP users connecting once this month and no TLS sessions" do
     before do
       month_start = Date.new(today.year, today.month, 1)
 
@@ -65,7 +65,38 @@ describe Performance::UseCase::MonthToDatePeapUniqueUsers do
     end
   end
 
-  context "with TLS sessions where username is null" do
+  context "with both active username sessions and TLS sessions this month" do
+    before do
+      month_start = Date.new(today.year, today.month, 1)
+
+      sessions.insert(siteIP: "10.0.0.1", username: "USER01", start: month_start, success: 1)
+      sessions.insert(siteIP: "10.0.0.2", username: "USER02", start: today, success: 1)
+      sessions.insert(siteIP: "10.0.0.3", username: "USER03", start: today, success: 1)
+
+      sessions.insert(
+        siteIP: "10.0.0.4",
+        username: nil,
+        cert_serial: "SERIAL123",
+        cert_issuer: "GovWifi CA",
+        start: month_start,
+        success: 1,
+      )
+      sessions.insert(
+        siteIP: "10.0.0.5",
+        username: nil,
+        cert_serial: "SERIAL123",
+        cert_issuer: "GovWifi CA",
+        start: today,
+        success: 1,
+      )
+    end
+
+    it "subtracts unique TLS users from active users (3 active - 1 TLS = 2 PEAP)" do
+      expect(result[:count]).to eq(2)
+    end
+  end
+
+  context "with TLS sessions exceeding username sessions (e.g. only TLS sessions)" do
     before do
       sessions.insert(
         siteIP: "10.0.0.1",
@@ -77,12 +108,12 @@ describe Performance::UseCase::MonthToDatePeapUniqueUsers do
       )
     end
 
-    it "ignores sessions with a null username" do
+    it "floors the count at 0 via GREATEST(..., 0)" do
       expect(result[:count]).to eq(0)
     end
   end
 
-  context "with failed PEAP authentication sessions" do
+  context "with failed authentication sessions" do
     before do
       sessions.insert(
         siteIP: "10.0.0.1",

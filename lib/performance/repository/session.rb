@@ -179,12 +179,14 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
     def month_to_date_peap_unique_users(date: Date.today)
       sql = "SELECT
               DATE_FORMAT('#{date}', '%Y-%m-%d') AS run_time,
-              COUNT(DISTINCT username) AS total
+              GREATEST(
+                CAST(COUNT(DISTINCT username) AS SIGNED) -
+                CAST(COUNT(DISTINCT CASE WHEN username IS NULL THEN cert_serial END, CASE WHEN username IS NULL THEN cert_issuer END) AS SIGNED),
+                0
+              ) AS total
             FROM
               sessions
             WHERE
-              username IS NOT NULL
-            AND
               start BETWEEN DATE_FORMAT('#{date}', '%Y-%m-01') AND '#{date}'
             AND
               success = 1"
@@ -195,12 +197,14 @@ class Performance::Repository::Session < Sequel::Model(:sessions)
     def monthly_rolling_window_peap_unique_users(date: Date.today)
       sql = "SELECT
               DATE_FORMAT('#{date}', '%Y-%m-%d') AS run_time,
-              COUNT(DISTINCT username) AS total
+              GREATEST(
+                CAST(COUNT(DISTINCT username) AS SIGNED) -
+                CAST(COUNT(DISTINCT CASE WHEN username IS NULL THEN cert_serial END, CASE WHEN username IS NULL THEN cert_issuer END) AS SIGNED),
+                0
+              ) AS total
             FROM
               sessions
             WHERE
-              username IS NOT NULL
-            AND
               start BETWEEN '#{date}' - INTERVAL 31 DAY AND '#{date}' - INTERVAL 1 DAY
             AND
               success = 1"
