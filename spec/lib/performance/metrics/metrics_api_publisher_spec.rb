@@ -190,4 +190,121 @@ describe Performance::Metrics::MetricsApiPublisher do
       end
     end
   end
+
+  describe ".update" do
+    let(:stats) do
+      {
+        metric_name: "service-report-peap-unique-users-rolling-count",
+        count: 8500,
+        run_time: "2026-07-17",
+      }
+    end
+
+    let(:expected_payload) do
+      {
+        "name" => "service-report-peap-unique-users-rolling-count",
+        "value" => "8500",
+        "datetime" => "2026-07-17T00:00:00Z",
+      }
+    end
+
+    it "returns nil when stats are nil" do
+      expect(described_class.update(nil)).to be_nil
+    end
+
+    it "PUTs stats to the metrics API with auth headers and returns the Faraday response" do
+      stub = stub_request(:put, expected_url).with(
+        body: expected_payload.to_json,
+        headers: {
+          "Authorization" => "Bearer #{api_token}",
+          "Content-Type" => "application/json",
+        },
+      ).to_return(status: 200, body: '{"message":"Metric updated successfully"}')
+
+      response = described_class.update(stats)
+
+      expect(stub).to have_been_requested.once
+      expect(response.status).to eq(200)
+    end
+
+    context "when the API update request fails with a connection error" do
+      let(:test_logger) { Logger.new(StringIO.new) }
+
+      before do
+        described_class.logger = test_logger
+        stub_request(:put, expected_url).to_raise(Faraday::ConnectionFailed.new("Connection refused"))
+      end
+
+      after do
+        described_class.logger = nil
+      end
+
+      it "logs a warning and returns nil" do
+        expect(test_logger).to receive(:warn).with("Metrics API update request failed: Connection refused (endpoint: #{api_endpoint})")
+        expect(described_class.update(stats)).to be_nil
+      end
+    end
+  end
+
+  describe ".fetch_export" do
+    let(:export_url) { "https://metrics.development.wifi.service.gov.uk/v1/data/export?year=2026" }
+    let(:export_records) do
+      [
+        { "name" => "monthly-rolling-window-total-active-users", "value" => 100.0, "datetime" => "2026-07-17 00:00:00 UTC" },
+      ]
+    end
+
+    it "GETs exported records for the given year with Bearer auth and parses JSON" do
+      stub = stub_request(:get, export_url).with(
+        headers: { "Authorization" => "Bearer #{api_token}" },
+      ).to_return(status: 200, body: export_records.to_json)
+
+      result = described_class.fetch_export(year: 2026)
+
+      expect(stub).to have_been_requested.once
+      expect(result).to eq(export_records)
+    end
+
+    context "when the export endpoint returns an HTTP error status" do
+      let(:test_logger) { Logger.new(StringIO.new) }
+
+      before do
+        described_class.logger = test_logger
+        stub_request(:get, export_url).to_return(status: 500, body: "Internal Server Error")
+      end
+
+      after do
+        described_class.logger = nil
+      end
+
+      it "logs a warning and returns nil" do
+        expect(test_logger).to receive(:warn).with("Metrics API export failed (status: 500): Internal Server Error")
+        expect(described_class.fetch_export(year: 2026)).to be_nil
+      end
+    end
+
+    context "when the export request fails with a Faraday error or invalid JSON" do
+      let(:test_logger) { Logger.new(StringIO.new) }
+
+      before do
+        described_class.logger = test_logger
+      end
+
+      after do
+        described_class.logger = nil
+      end
+
+      it "logs a warning and returns nil on connection error" do
+        stub_request(:get, export_url).to_raise(Faraday::ConnectionFailed.new("Connection refused"))
+        expect(test_logger).to receive(:warn).with(/Metrics API export request failed: Connection refused/)
+        expect(described_class.fetch_export(year: 2026)).to be_nil
+      end
+
+      it "logs a warning and returns nil on invalid JSON response" do
+        stub_request(:get, export_url).to_return(status: 200, body: "not-json")
+        expect(test_logger).to receive(:warn).with(/Metrics API export request failed/)
+        expect(described_class.fetch_export(year: 2026)).to be_nil
+      end
+    end
+  end
 end
