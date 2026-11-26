@@ -23,6 +23,10 @@ FactoryBot.define do
       cert_subject do
         "/CN=#{Faker::Name.name}/O=#{issuing_org}/C=uk"
       end
+      transient do
+        cert_valid_since { 2.years.ago }
+        cert_expiration { 5.years.from_now }
+      end
     end
   end
 end

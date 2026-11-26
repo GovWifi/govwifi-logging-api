@@ -49,6 +49,8 @@ module Logging
           cert_serial: @params.fetch("cert_serial"),
           cert_issuer: @params.fetch("cert_issuer"),
           cert_subject: @params.fetch("cert_subject"),
+          cert_valid_since: @params.fetch("X509_Time_Valid_From"),
+          cert_expiration: @params.fetch("X509_Time_Valid_To"),
         ),
       )
     end

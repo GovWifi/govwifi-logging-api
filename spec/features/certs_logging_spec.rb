@@ -19,6 +19,8 @@ describe App do
           authentication_result:,
           task_id: "arn:aws:ecs:task_id",
           authentication_reply:,
+          X509_Time_Valid_From: x509_valid_from,
+          X509_Time_Valid_To: x509_valid_to,
           eap_type: "TLS",
         }.to_json
       end
@@ -27,6 +29,8 @@ describe App do
       let(:cert_issuer) { "Example Issuer" }
       let(:cert_subject) { "Example Subject" }
       let(:cert_serial) { "Example Serial" }
+      let(:x509_valid_from) { "2023-01-01 00:00:00" }
+      let(:x509_valid_to) { "2024-01-01 00:00:00" }
       let(:authentication_result) { "Access-Accept" }
       let(:authentication_reply) { "This is a reply message" }
 
@@ -38,6 +42,11 @@ describe App do
 
       it "the certificate common name" do
         expect(Session.first[:cert_name]).to eq("Example Certificate Common Name")
+      end
+
+      it "the certificate validity window" do
+        expect(Session.first[:cert_valid_since].to_time).to eq(Time.utc(2023, 1, 1, 0, 0, 0))
+        expect(Session.first[:cert_expiration].to_time).to eq(Time.utc(2024, 1, 1, 0, 0, 0))
       end
     end
 

@@ -13,6 +13,8 @@ describe App do
     let(:cert_serial) { "732e7656424b5d3ca82db606acc580e26d1abca7" }
     let(:cert_subject) { "\/CN=Client" }
     let(:cert_issuer) { "\/CN=Intermediate CA" }
+    let(:x509_valid_from) { "2023-01-01 00:00:00" }
+    let(:x509_valid_to) { "2024-01-01 00:00:00" }
     let(:task_id) { "arn:aws:ecs:task_id" }
     let(:authentication_reply) { "This is a reply message" }
     let(:eap_type) { "MSCHAPV2" }
@@ -29,6 +31,8 @@ describe App do
         cert_serial:,
         cert_subject:,
         cert_issuer:,
+        X509_Time_Valid_From: x509_valid_from,
+        X509_Time_Valid_To: x509_valid_to,
         eap_type:,
       }.to_json
     end
@@ -60,6 +64,8 @@ describe App do
             expect(session.cert_serial).to eq(cert_serial)
             expect(session.cert_subject).to eq(cert_subject)
             expect(session.cert_issuer).to eq(cert_issuer)
+            expect(session.cert_valid_since.to_time).to eq(Time.utc(2023, 1, 1, 0, 0, 0))
+            expect(session.cert_expiration.to_time).to eq(Time.utc(2024, 1, 1, 0, 0, 0))
             expect(session.eap_type).to eq("EAP-TLS")
           end
         end
